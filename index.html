@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BITAMD CASINO</title>
+    <title>BITAMD CASINO - админ создаёт игроков</title>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -15,12 +15,12 @@
             min-height: 100vh;
         }
         .container { max-width: 1200px; margin: 0 auto; }
-        .auth-container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 30px; }
         .auth-card {
             background: rgba(30,30,40,0.95);
             border-radius: 24px;
             padding: 20px;
             width: 280px;
+            margin: 0 auto 20px;
             border: 1px solid #f7931a;
         }
         .auth-card input {
@@ -90,32 +90,26 @@
         .win { color: #4caf50; }
         .lose { color: #f44336; }
         .logout-btn { background: #555; margin-top: 10px; }
+        .create-user-btn { background: #2c7a4d; margin-left: 10px; }
         @media (max-width: 700px) {
-            .auth-container { flex-direction: column; align-items: center; }
             .balance-card .balance { font-size: 36px; }
         }
     </style>
 </head>
 <body>
 <div class="container" id="app">
+    <!-- Панель входа -->
     <div id="authPanel">
-        <div class="auth-container">
-            <div class="auth-card">
-                <h3>🔐 ВХОД</h3>
-                <input type="text" id="loginUsername" placeholder="Логин">
-                <input type="password" id="loginPassword" placeholder="Пароль">
-                <button id="doLogin">Войти</button>
-            </div>
-            <div class="auth-card">
-                <h3>📝 РЕГИСТРАЦИЯ</h3>
-                <input type="text" id="regUsername" placeholder="Логин">
-                <input type="password" id="regPassword" placeholder="Пароль">
-                <button id="doRegister">Зарегистрироваться</button>
-            </div>
+        <div class="auth-card">
+            <h3>🔐 ВХОД</h3>
+            <input type="text" id="loginUsername" placeholder="Логин">
+            <input type="password" id="loginPassword" placeholder="Пароль">
+            <button id="doLogin">Войти</button>
         </div>
         <div id="authMessage" style="text-align:center; color:#f7931a;"></div>
     </div>
 
+    <!-- Игровая панель (после входа) -->
     <div id="gamePanel" style="display:none;">
         <div class="balance-card">
             <h2>💰 ИГРОК: <span id="currentUser">-</span></h2>
@@ -124,14 +118,18 @@
             <button id="logoutBtn" class="logout-btn">🚪 Выйти</button>
         </div>
 
+        <!-- Админ-панель (видна только админу) -->
         <div id="adminPanel" class="admin-panel" style="display:none;">
             <h3>🔧 АДМИН-ПАНЕЛЬ</h3>
-            <input type="text" id="adminTargetUser" placeholder="Логин игрока">
-            <input type="number" id="adminNewBalance" placeholder="Новый баланс">
-            <button id="adminSetBalance">Установить баланс</button>
-            <button id="adminAddBalance">➕ Добавить</button>
-            <button id="adminSubtractBalance">➖ Отнять</button>
-            <div id="adminMsg"></div>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                <input type="text" id="adminTargetUser" placeholder="Логин игрока" style="flex:2;">
+                <input type="number" id="adminNewBalance" placeholder="Новый баланс" style="flex:1;">
+                <button id="adminSetBalance">Установить</button>
+                <button id="adminAddBalance">➕ Добавить</button>
+                <button id="adminSubtractBalance">➖ Отнять</button>
+                <button id="adminCreateUser" class="create-user-btn">➕ Создать игрока</button>
+            </div>
+            <div id="adminMsg" style="margin-top: 10px;"></div>
         </div>
 
         <div class="games-grid">
@@ -167,7 +165,7 @@
 </div>
 
 <script>
-    // ===== ЛОКАЛЬНОЕ ХРАНЕНИЕ (без GitHub API) =====
+    // ===== ЛОКАЛЬНОЕ ХРАНЕНИЕ =====
     let users = JSON.parse(localStorage.getItem('casino_users') || '{}');
     let currentUser = null;
 
@@ -219,6 +217,13 @@
         return true;
     }
 
+    function createUser(username, password, balance = 100) {
+        if (users[username]) return false;
+        users[username] = { password, balance, isAdmin: false };
+        saveUsers();
+        return true;
+    }
+
     function showMessage(elId, msg, isError) {
         const el = document.getElementById(elId);
         if (el) {
@@ -233,7 +238,7 @@
         setTimeout(() => el.className = 'result', 2000);
     }
 
-    async function playGame(gameName, bet, targetValue, resultDiv, onWinMsg, onLoseMsg) {
+    function playGame(gameName, bet, targetValue, resultDiv, onWinMsg, onLoseMsg) {
         if (!currentUser) { alert("Вы не авторизованы!"); return; }
         const user = users[currentUser];
         if (!user) { alert("Ошибка пользователя"); return; }
@@ -269,7 +274,6 @@
             displayMsg = `${a} ${b} ${c}`;
         }
 
-        // Обновляем баланс
         user.balance -= bet;
         if (isWin) user.balance += winAmount;
         saveUsers();
@@ -296,17 +300,6 @@
         document.getElementById('loginUsername').value = '';
         document.getElementById('loginPassword').value = '';
     };
-    document.getElementById('doRegister').onclick = () => {
-        const login = document.getElementById('regUsername').value.trim();
-        const pass = document.getElementById('regPassword').value.trim();
-        if (!login || !pass) { showMessage('authMessage', 'Заполни поля', true); return; }
-        if (users[login]) { showMessage('authMessage', '❌ Логин уже занят', true); return; }
-        users[login] = { password: pass, balance: 100, isAdmin: false };
-        saveUsers();
-        showMessage('authMessage', '✅ Регистрация успешна! Войдите.', false);
-        document.getElementById('regUsername').value = '';
-        document.getElementById('regPassword').value = '';
-    };
     document.getElementById('logoutBtn').onclick = () => { currentUser = null; updateUI(); };
 
     // Админ-панель
@@ -330,6 +323,18 @@
         if (!target || isNaN(sub)) { showMessage('adminMsg', 'Введи логин и сумму', true); return; }
         if (addToBalance(target, -sub)) showMessage('adminMsg', `✅ -${sub} AMD для ${target}`, false);
         else showMessage('adminMsg', '❌ Игрок не найден', true);
+    };
+    document.getElementById('adminCreateUser').onclick = () => {
+        const newLogin = prompt("Логин нового игрока:");
+        if (!newLogin) return;
+        if (users[newLogin]) {
+            showMessage('adminMsg', '❌ Игрок с таким логином уже существует', true);
+            return;
+        }
+        const newPass = prompt("Пароль для нового игрока:");
+        if (!newPass) return;
+        createUser(newLogin, newPass, 100);
+        showMessage('adminMsg', `✅ Игрок ${newLogin} создан! Баланс 100 AMD.`, false);
     };
 
     // Игры
