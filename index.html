@@ -149,7 +149,6 @@
 </div>
 
 <div class="container" id="app">
-    <!-- ВХОД -->
     <div id="authPanel">
         <div class="auth-card">
             <h3>🔐 ВХОД</h3>
@@ -161,7 +160,6 @@
         <div id="authMessage" style="text-align:center; color:#f7931a;"></div>
     </div>
 
-    <!-- РЕГИСТРАЦИЯ -->
     <div id="registerPanel" style="display:none;">
         <div class="register-card">
             <h3>📝 РЕГИСТРАЦИЯ</h3>
@@ -181,7 +179,6 @@
         <div id="regMessage" style="text-align:center; color:#f7931a;"></div>
     </div>
 
-    <!-- ИГРОВАЯ ПАНЕЛЬ -->
     <div id="gamePanel" style="display:none;">
         <div class="balance-card">
             <h2>💰 ИГРОК: <span id="currentUser">-</span></h2>
@@ -253,21 +250,20 @@
     let currentUser = null;
     let bjScore = 0, bjCards = [], bjBet = 0, bjInGame = false;
 
-    // === ЗВУК ===
     function playMemSound() {
         try {
             const audio = new Audio('/mem.mp3');
             audio.volume = 0.5;
-            audio.play().catch(e => console.log("Звук не загрузился"));
+            audio.play().catch(function(e) { console.log("Звук не загрузился"); });
         } catch(e) {}
     }
 
-    // === МОДАЛКА ===
-    const modal = document.getElementById('termsModal');
-    const viewTermsBtn = document.getElementById('viewTermsBtn');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const agreeAndCloseBtn = document.getElementById('agreeAndCloseBtn');
-    const agreeTermsCheckbox = document.getElementById('agreeTerms');
+    // МОДАЛКА
+    var modal = document.getElementById('termsModal');
+    var viewTermsBtn = document.getElementById('viewTermsBtn');
+    var closeModalBtn = document.getElementById('closeModalBtn');
+    var agreeAndCloseBtn = document.getElementById('agreeAndCloseBtn');
+    var agreeTermsCheckbox = document.getElementById('agreeTerms');
     
     if(viewTermsBtn) {
         viewTermsBtn.onclick = function() { if(modal) modal.style.display = 'flex'; };
@@ -287,11 +283,10 @@
     
     function showToast(msg) { alert(msg); }
 
-    // === ОСНОВНЫЕ ФУНКЦИИ ===
     async function loadUsers() {
         try {
-            const res = await fetch(SCRIPT_URL + "?action=getUsers");
-            const data = await res.json();
+            var res = await fetch(SCRIPT_URL + "?action=getUsers");
+            var data = await res.json();
             return data.success ? data.users : {};
         } catch(e) { 
             console.error("loadUsers error:", e);
@@ -300,45 +295,44 @@
     }
 
     async function addBalance(login, amount) {
-        await fetch(`${SCRIPT_URL}?action=addBalance&login=${encodeURIComponent(login)}&amount=${amount}`);
+        await fetch(SCRIPT_URL + "?action=addBalance&login=" + encodeURIComponent(login) + "&amount=" + amount);
     }
 
     async function addDeposited(login, amount) {
-        await fetch(`${SCRIPT_URL}?action=addDeposited&login=${encodeURIComponent(login)}&amount=${amount}`);
+        await fetch(SCRIPT_URL + "?action=addDeposited&login=" + encodeURIComponent(login) + "&amount=" + amount);
     }
 
     async function resetBalanceAndDeposited(login) {
-        await fetch(`${SCRIPT_URL}?action=resetBalanceAndDeposited&login=${encodeURIComponent(login)}`);
+        await fetch(SCRIPT_URL + "?action=resetBalanceAndDeposited&login=" + encodeURIComponent(login));
     }
 
     async function setBalance(login, amount) {
-        await fetch(`${SCRIPT_URL}?action=setBalance&login=${encodeURIComponent(login)}&balance=${amount}`);
+        await fetch(SCRIPT_URL + "?action=setBalance&login=" + encodeURIComponent(login) + "&balance=" + amount);
     }
 
     async function createUser(login, password, balance, isAdmin, bankarooCode) {
-        await fetch(`${SCRIPT_URL}?action=createUser&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}&balance=${balance}&isAdmin=${isAdmin}&bankarooCode=${encodeURIComponent(bankarooCode)}`);
+        await fetch(SCRIPT_URL + "?action=createUser&login=" + encodeURIComponent(login) + "&password=" + encodeURIComponent(password) + "&balance=" + balance + "&isAdmin=" + isAdmin + "&bankarooCode=" + encodeURIComponent(bankarooCode));
     }
 
     async function checkBankaroo(login, link) {
         if (!link || link.trim() === "") {
             return { success: true, code: "", name: login };
         }
-        const res = await fetch(`${SCRIPT_URL}?action=checkBankaroo&login=${encodeURIComponent(login)}&bankarooLink=${encodeURIComponent(link)}`);
+        var res = await fetch(SCRIPT_URL + "?action=checkBankaroo&login=" + encodeURIComponent(login) + "&bankarooLink=" + encodeURIComponent(link));
         return await res.json();
     }
 
     async function refreshBalance() {
         if (!currentUser) return;
-        const users = await loadUsers();
+        var users = await loadUsers();
         if (users[currentUser]) {
             document.getElementById('casinoBalance').innerText = users[currentUser].balance.toFixed(2);
         }
     }
 
-    // === ВХОД ===
     async function loginUser(login, password) {
-        const users = await loadUsers();
-        const user = users[login];
+        var users = await loadUsers();
+        var user = users[login];
         if (user && user.password === password) {
             currentUser = login;
             document.getElementById('authPanel').style.display = 'none';
@@ -346,7 +340,7 @@
             document.getElementById('gamePanel').style.display = 'block';
             document.getElementById('currentUser').innerText = currentUser;
             await refreshBalance();
-            const adminPanel = document.getElementById('adminPanel');
+            var adminPanel = document.getElementById('adminPanel');
             if (adminPanel) adminPanel.style.display = user.isAdmin ? 'block' : 'none';
             return true;
         } else {
@@ -355,20 +349,19 @@
         }
     }
 
-    // === РЕГИСТРАЦИЯ ===
     async function registerUser(login, password, bankarooLink) {
         if (!agreeTermsCheckbox || !agreeTermsCheckbox.checked) {
             document.getElementById('regMessage').innerHTML = '❌ Примите условия использования';
             return false;
         }
         
-        const users = await loadUsers();
+        var users = await loadUsers();
         if (users[login]) {
             document.getElementById('regMessage').innerHTML = '❌ Логин уже существует';
             return false;
         }
         
-        const check = await checkBankaroo(login, bankarooLink);
+        var check = await checkBankaroo(login, bankarooLink);
         if (!check.success) {
             document.getElementById('regMessage').innerHTML = '❌ ' + check.error;
             return false;
@@ -377,65 +370,64 @@
         await createUser(login, password, 0, false, check.code || "");
         
         if (check.name) {
-            document.getElementById('regMessage').innerHTML = `✅ Регистрация успешна! Добро пожаловать, ${check.name}!`;
+            document.getElementById('regMessage').innerHTML = '✅ Регистрация успешна! Добро пожаловать, ' + check.name + '!';
         } else {
-            document.getElementById('regMessage').innerHTML = `✅ Регистрация успешна! Добро пожаловать, ${login}!`;
+            document.getElementById('regMessage').innerHTML = '✅ Регистрация успешна! Добро пожаловать, ' + login + '!';
         }
         
-        setTimeout(() => {
+        setTimeout(function() {
             document.getElementById('registerPanel').style.display = 'none';
             document.getElementById('authPanel').style.display = 'block';
         }, 1500);
         return true;
     }
 
-    // === ЗАЯВКИ ===
     function requestDeposit() {
-        const amount = prompt("Введите сумму ввода (AMD):");
+        var amount = prompt("Введите сумму ввода (AMD):");
         if (amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0) {
-            fetch(`${SCRIPT_URL}?action=depositRequest&login=${encodeURIComponent(currentUser)}&amount=${amount}`)
-                .then(() => showToast(`✅ Заявка на ввод ${amount} AMD отправлена`))
-                .catch(err => showToast("❌ Ошибка: " + err));
+            fetch(SCRIPT_URL + "?action=depositRequest&login=" + encodeURIComponent(currentUser) + "&amount=" + amount)
+                .then(function() { showToast("✅ Заявка на ввод " + amount + " AMD отправлена"); })
+                .catch(function(err) { showToast("❌ Ошибка: " + err); });
         } else showToast("❌ Неверная сумма");
     }
 
     async function requestWithdraw() {
-        const users = await loadUsers();
-        const user = users[currentUser];
+        var users = await loadUsers();
+        var user = users[currentUser];
         if (!user) return;
-        const required = user.deposited * 2;
+        var required = user.deposited * 2;
         if (user.balance >= required) {
-            if (confirm(`Вывести ${user.balance} AMD?`)) {
-                await fetch(`${SCRIPT_URL}?action=withdrawRequest&login=${encodeURIComponent(currentUser)}&amount=${user.balance}`);
+            if (confirm("Вывести " + user.balance + " AMD?")) {
+                await fetch(SCRIPT_URL + "?action=withdrawRequest&login=" + encodeURIComponent(currentUser) + "&amount=" + user.balance);
                 await resetBalanceAndDeposited(currentUser);
                 await refreshBalance();
-                showToast(`✅ Заявка на вывод отправлена. Баланс обнулён.`);
+                showToast("✅ Заявка на вывод отправлена. Баланс обнулён.");
             }
         } else {
-            showToast(`❌ Нужно минимум ${required} AMD. У вас ${user.balance}.`);
+            showToast("❌ Нужно минимум " + required + " AMD. У вас " + user.balance + ".");
         }
     }
 
     function showAdminMessage(msg) {
-        const el = document.getElementById('adminMsg');
+        var el = document.getElementById('adminMsg');
         if (el) {
             el.innerHTML = msg;
-            setTimeout(() => el.innerHTML = '', 3000);
+            setTimeout(function() { el.innerHTML = ''; }, 3000);
         }
     }
 
     async function confirmDeposit(login, amount) {
         await addBalance(login, amount);
         await addDeposited(login, amount);
-        showAdminMessage(`✅ Зачислено ${amount} AMD на счёт ${login}.`);
+        showAdminMessage("✅ Зачислено " + amount + " AMD на счёт " + login + ".");
         if (currentUser === login) await refreshBalance();
     }
 
-    // === СЛОТЫ ===
-    const slotSymbols = ['🍒', '🍋', '🍊', '🍉', '⭐', '💎', '7️⃣'];
+    // СЛОТЫ
+    var slotSymbols = ['🍒', '🍋', '🍊', '🍉', '⭐', '💎', '7️⃣'];
     
     function getSlotMultiplier(symbols) {
-        const [a, b, c] = symbols;
+        var a = symbols[0], b = symbols[1], c = symbols[2];
         if (a === '💎' && b === '💎' && c === '💎') return 25;
         if (a === '7️⃣' && b === '7️⃣' && c === '7️⃣') return 15;
         if (a === '⭐' && b === '⭐' && c === '⭐') return 10;
@@ -449,20 +441,20 @@
     
     async function playSlots(bet, resultElement) {
         if (!currentUser) return alert("Не авторизован");
-        const users = await loadUsers();
+        var users = await loadUsers();
         if (users[currentUser].balance < bet) return alert("Недостаточно средств");
         
         await addBalance(currentUser, -bet);
         await refreshBalance();
         
-        const slotDiv = document.getElementById('slotsDisplay');
-        let spins = 0;
-        const maxSpins = 15;
+        var slotDiv = document.getElementById('slotsDisplay');
+        var spins = 0;
+        var maxSpins = 15;
         
         if(resultElement) resultElement.innerHTML = '🎰 КРУТИМ... 🎰';
         
-        const interval = setInterval(function() {
-            const randomSymbols = [
+        var interval = setInterval(async function() {
+            var randomSymbols = [
                 slotSymbols[Math.floor(Math.random() * slotSymbols.length)],
                 slotSymbols[Math.floor(Math.random() * slotSymbols.length)],
                 slotSymbols[Math.floor(Math.random() * slotSymbols.length)]
@@ -472,28 +464,28 @@
             
             if (spins >= maxSpins) {
                 clearInterval(interval);
-                const finalSymbols = [
+                var finalSymbols = [
                     slotSymbols[Math.floor(Math.random() * slotSymbols.length)],
                     slotSymbols[Math.floor(Math.random() * slotSymbols.length)],
                     slotSymbols[Math.floor(Math.random() * slotSymbols.length)]
                 ];
                 if(slotDiv) slotDiv.innerHTML = finalSymbols.join(' ');
                 
-                const multiplier = getSlotMultiplier(finalSymbols);
-                const winAmount = bet * multiplier;
-                const isWin = winAmount > 0;
+                var multiplier = getSlotMultiplier(finalSymbols);
+                var winAmount = bet * multiplier;
+                var isWin = winAmount > 0;
                 
                 if (isWin) {
                     await addBalance(currentUser, winAmount);
                     await refreshBalance();
                 }
                 
-                let msg = '';
-                if (multiplier >= 15) msg = `🎉🎉🎉 ДЖЕКПОТ! +${winAmount} AMD! 🎉🎉🎉`;
-                else if (multiplier >= 10) msg = `🎉✨ МЕГА ВЫИГРЫШ! +${winAmount} AMD! (x${multiplier}) ✨🎉`;
-                else if (multiplier >= 4) msg = `🎉 ВЫИГРЫШ ${winAmount} AMD! (x${multiplier})`;
-                else if (multiplier === 1.5) msg = `💰 Почти выиграл! +${winAmount} AMD (x1.5)`;
-                else msg = `😞 Проигрыш ${bet} AMD.`;
+                var msg = '';
+                if (multiplier >= 15) msg = '🎉🎉🎉 ДЖЕКПОТ! +' + winAmount + ' AMD! 🎉🎉🎉';
+                else if (multiplier >= 10) msg = '🎉✨ МЕГА ВЫИГРЫШ! +' + winAmount + ' AMD! (x' + multiplier + ') ✨🎉';
+                else if (multiplier >= 4) msg = '🎉 ВЫИГРЫШ ' + winAmount + ' AMD! (x' + multiplier + ')';
+                else if (multiplier === 1.5) msg = '💰 Почти выиграл! +' + winAmount + ' AMD (x1.5)';
+                else msg = '😞 Проигрыш ' + bet + ' AMD.';
                 
                 if(resultElement) {
                     resultElement.innerHTML = msg + ' ' + finalSymbols.join(' ');
@@ -504,36 +496,35 @@
         }, 80);
     }
 
-    // === ДРУГИЕ ИГРЫ ===
     async function playGame(gameType, bet, guess, resultElement) {
         if (!currentUser) return alert("Не авторизован");
-        const users = await loadUsers();
+        var users = await loadUsers();
         if (users[currentUser].balance < bet) return alert("Недостаточно средств");
         
-        let isWin = false, winAmount = 0, displayMsg = "";
+        var isWin = false, winAmount = 0, displayMsg = "";
         
         if (gameType === 'coin') {
-            const res = Math.random() < 0.5 ? 'Орёл' : 'Решка';
+            var res = Math.random() < 0.5 ? 'Орёл' : 'Решка';
             isWin = res === guess;
             winAmount = isWin ? bet * 2 : 0;
             displayMsg = res;
         } else if (gameType === 'dice') {
-            const roll = Math.floor(Math.random() * 6) + 1;
+            var roll = Math.floor(Math.random() * 6) + 1;
             isWin = roll === guess;
             winAmount = isWin ? bet * 5 : 0;
-            displayMsg = `Выпало ${roll}`;
+            displayMsg = "Выпало " + roll;
         } else if (gameType === 'roulette') {
-            const roll = Math.floor(Math.random() * 10) + 1;
+            var roll = Math.floor(Math.random() * 10) + 1;
             isWin = roll === guess;
             winAmount = isWin ? bet * 10 : 0;
-            displayMsg = `Выпало ${roll}`;
+            displayMsg = "Выпало " + roll;
         } else if (gameType === 'dice2') {
-            const r1 = Math.floor(Math.random() * 6) + 1;
-            const r2 = Math.floor(Math.random() * 6) + 1;
-            const sum = r1 + r2;
+            var r1 = Math.floor(Math.random() * 6) + 1;
+            var r2 = Math.floor(Math.random() * 6) + 1;
+            var sum = r1 + r2;
             isWin = sum === guess;
             winAmount = isWin ? bet * 8 : 0;
-            displayMsg = `${r1}+${r2}=${sum}`;
+            displayMsg = r1 + "+" + r2 + "=" + sum;
         }
         
         await addBalance(currentUser, -bet);
@@ -541,17 +532,17 @@
         await refreshBalance();
         
         if(resultElement) {
-            resultElement.innerHTML = isWin ? `🎉 Выигрыш ${winAmount} AMD! ${displayMsg}` : `😞 Проигрыш ${bet} AMD. ${displayMsg}`;
+            resultElement.innerHTML = isWin ? ("🎉 Выигрыш " + winAmount + " AMD! " + displayMsg) : ("😞 Проигрыш " + bet + " AMD. " + displayMsg);
             resultElement.className = isWin ? 'result win' : 'result lose';
             setTimeout(function() { resultElement.className = 'result'; }, 2000);
         }
     }
 
-    // === БЛЭКДЖЕК ===
+    // БЛЭКДЖЕК
     async function blackjackHit() {
         if (!bjInGame) {
-            const bet = parseFloat(document.getElementById('blackjackBet').value);
-            const users = await loadUsers();
+            var bet = parseFloat(document.getElementById('blackjackBet').value);
+            var users = await loadUsers();
             if (users[currentUser].balance < bet) return alert("Недостаточно средств");
             bjBet = bet;
             bjCards = [];
@@ -566,12 +557,12 @@
     }
     
     function drawCard() {
-        let card = Math.floor(Math.random() * 10) + 1;
-        let val = card === 1 ? 11 : Math.min(card, 10);
-        bjCards.push({ card, val });
+        var card = Math.floor(Math.random() * 10) + 1;
+        var val = card === 1 ? 11 : Math.min(card, 10);
+        bjCards.push({ card: card, val: val });
         bjScore += val;
         if (bjScore > 21) {
-            for (let i = 0; i < bjCards.length && bjScore > 21; i++) {
+            for (var i = 0; i < bjCards.length && bjScore > 21; i++) {
                 if (bjCards[i].card === 1 && bjCards[i].val === 11) {
                     bjCards[i].val = 1;
                     bjScore -= 10;
@@ -581,43 +572,43 @@
     }
     
     function updateBJUI() {
-        const str = bjCards.map(function(c) { return c.card === 1 ? 'A' : (c.card === 11 ? 'J' : (c.card === 12 ? 'Q' : (c.card === 13 ? 'K' : c.card))); }).join(', ');
-        const bjStatus = document.getElementById('bjStatus');
-        if(bjStatus) bjStatus.innerHTML = `Карты: ${str} | Очки: ${bjScore}`;
+        var str = bjCards.map(function(c) { return c.card === 1 ? 'A' : (c.card === 11 ? 'J' : (c.card === 12 ? 'Q' : (c.card === 13 ? 'K' : c.card))); }).join(', ');
+        var bjStatus = document.getElementById('bjStatus');
+        if(bjStatus) bjStatus.innerHTML = "Карты: " + str + " | Очки: " + bjScore;
     }
     
     async function blackjackStand() {
         if (!bjInGame) return;
         bjInGame = false;
-        let dealerScore = 0, dealerCards = [];
-        for (let i=0;i<2;i++) {
-            let card = Math.floor(Math.random()*10)+1;
-            let val = card===1?11:Math.min(card,10);
-            dealerCards.push({card,val});
+        var dealerScore = 0, dealerCards = [];
+        for (var i=0;i<2;i++) {
+            var card = Math.floor(Math.random()*10)+1;
+            var val = card===1?11:Math.min(card,10);
+            dealerCards.push({card:card,val:val});
             dealerScore+=val;
         }
         while(dealerScore<17){
-            let card = Math.floor(Math.random()*10)+1;
-            let val = card===1?11:Math.min(card,10);
-            dealerCards.push({card,val});
+            var card = Math.floor(Math.random()*10)+1;
+            var val = card===1?11:Math.min(card,10);
+            dealerCards.push({card:card,val:val});
             dealerScore+=val;
             if(dealerScore>21){
-                for(let i=0;i<dealerCards.length&&dealerScore>21;i++){
-                    if(dealerCards[i].card===1&&dealerCards[i].val===11){
-                        dealerCards[i].val=1;
+                for(var j=0;j<dealerCards.length&&dealerScore>21;j++){
+                    if(dealerCards[j].card===1&&dealerCards[j].val===11){
+                        dealerCards[j].val=1;
                         dealerScore-=10;
                     }
                 }
             }
         }
-        const dealerStr = dealerCards.map(function(c) { return c.card===1?'A':(c.card===11?'J':(c.card===12?'Q':(c.card===13?'K':c.card))); }).join(', ');
-        let msg = `Дилер: ${dealerStr} | ${dealerScore}. `;
-        let isWin=false,winAmount=0;
+        var dealerStr = dealerCards.map(function(c) { return c.card===1?'A':(c.card===11?'J':(c.card===12?'Q':(c.card===13?'K':c.card))); }).join(', ');
+        var msg = "Дилер: " + dealerStr + " | " + dealerScore + ". ";
+        var isWin=false, winAmount=0;
         if(bjScore>21) msg+="Перебор! Проигрыш.";
         else if(dealerScore>21||bjScore>dealerScore){
             isWin=true;
             winAmount=bjBet*2;
-            msg+=`Вы выиграли! +${winAmount} AMD.`;
+            msg+="Вы выиграли! +" + winAmount + " AMD.";
         } else if(bjScore===dealerScore){
             winAmount=bjBet;
             isWin=true;
@@ -626,7 +617,7 @@
         await addBalance(currentUser, -bjBet);
         if(isWin) await addBalance(currentUser, winAmount);
         await refreshBalance();
-        const el = document.getElementById('bjResult');
+        var el = document.getElementById('bjResult');
         if(el) {
             el.innerHTML = msg;
             el.className = isWin ? 'result win' : 'result lose';
@@ -634,10 +625,10 @@
         }
     }
 
-    // === ВСЕ ОБРАБОТЧИКИ ===
+    // ВСЕ ОБРАБОТЧИКИ
     document.getElementById('doLoginBtn').onclick = async function() {
-        const login = document.getElementById('loginUsername').value.trim();
-        const pass = document.getElementById('loginPassword').value.trim();
+        var login = document.getElementById('loginUsername').value.trim();
+        var pass = document.getElementById('loginPassword').value.trim();
         if (!login || !pass) { 
             document.getElementById('authMessage').innerHTML = 'Заполните поля'; 
             return; 
@@ -646,9 +637,9 @@
     };
     
     document.getElementById('doRegisterBtn').onclick = async function() {
-        const login = document.getElementById('regUsername').value.trim();
-        const pass = document.getElementById('regPassword').value.trim();
-        const bankarooLink = document.getElementById('regBankarooLink').value.trim();
+        var login = document.getElementById('regUsername').value.trim();
+        var pass = document.getElementById('regPassword').value.trim();
+        var bankarooLink = document.getElementById('regBankarooLink').value.trim();
         if (!login || !pass) { 
             document.getElementById('regMessage').innerHTML = 'Заполните поля'; 
             return; 
@@ -680,55 +671,55 @@
     document.getElementById('withdrawBtn').onclick = function() { requestWithdraw(); };
     
     document.getElementById('adminConfirmDepositBtn').onclick = async function() {
-        const target = document.getElementById('adminTargetUser').value.trim();
-        const amount = parseFloat(document.getElementById('adminNewBalance').value);
+        var target = document.getElementById('adminTargetUser').value.trim();
+        var amount = parseFloat(document.getElementById('adminNewBalance').value);
         if (!target || isNaN(amount)) { showAdminMessage('Введите логин и сумму'); return; }
         await confirmDeposit(target, amount);
     };
     
     document.getElementById('adminSetBalance').onclick = async function() {
-        const target = document.getElementById('adminTargetUser').value.trim();
-        const bal = parseFloat(document.getElementById('adminNewBalance').value);
+        var target = document.getElementById('adminTargetUser').value.trim();
+        var bal = parseFloat(document.getElementById('adminNewBalance').value);
         if (!target || isNaN(bal)) { showAdminMessage('Введите логин и баланс'); return; }
         await setBalance(target, bal);
-        showAdminMessage(`✅ ${target} → ${bal} AMD`);
+        showAdminMessage("✅ " + target + " → " + bal + " AMD");
         if (currentUser === target) await refreshBalance();
     };
     
     document.getElementById('adminAddBalance').onclick = async function() {
-        const target = document.getElementById('adminTargetUser').value.trim();
-        const amt = parseFloat(document.getElementById('adminNewBalance').value);
+        var target = document.getElementById('adminTargetUser').value.trim();
+        var amt = parseFloat(document.getElementById('adminNewBalance').value);
         if (!target || isNaN(amt)) { showAdminMessage('Введите логин и сумму'); return; }
         await addBalance(target, amt);
-        showAdminMessage(`✅ +${amt} AMD для ${target}`);
+        showAdminMessage("✅ +" + amt + " AMD для " + target);
         if (currentUser === target) await refreshBalance();
     };
     
     document.getElementById('adminSubtractBalance').onclick = async function() {
-        const target = document.getElementById('adminTargetUser').value.trim();
-        const amt = parseFloat(document.getElementById('adminNewBalance').value);
+        var target = document.getElementById('adminTargetUser').value.trim();
+        var amt = parseFloat(document.getElementById('adminNewBalance').value);
         if (!target || isNaN(amt)) { showAdminMessage('Введите логин и сумму'); return; }
         await addBalance(target, -amt);
-        showAdminMessage(`✅ -${amt} AMD для ${target}`);
+        showAdminMessage("✅ -" + amt + " AMD для " + target);
         if (currentUser === target) await refreshBalance();
     };
     
     document.getElementById('adminCreateUserBtn').onclick = async function() {
-        const login = prompt("Логин нового игрока:");
+        var login = prompt("Логин нового игрока:");
         if (!login) return;
-        const users = await loadUsers();
+        var users = await loadUsers();
         if (users[login]) { showAdminMessage('❌ Логин уже существует'); return; }
-        const pass = prompt("Пароль:");
+        var pass = prompt("Пароль:");
         if (!pass) return;
-        const bankarooLink = prompt("Ссылка Bankaroo (можно пропустить):");
-        let bankarooCode = "";
+        var bankarooLink = prompt("Ссылка Bankaroo (можно пропустить):");
+        var bankarooCode = "";
         if (bankarooLink && bankarooLink.trim() !== "") {
-            const check = await checkBankaroo(login, bankarooLink);
+            var check = await checkBankaroo(login, bankarooLink);
             if (!check.success) { showAdminMessage('❌ ' + check.error); return; }
             bankarooCode = check.code || "";
         }
         await createUser(login, pass, 0, false, bankarooCode);
-        showAdminMessage(`✅ Игрок ${login} создан!`);
+        showAdminMessage("✅ Игрок " + login + " создан!");
     };
     
     document.getElementById('coinHeads').onclick = function() { 
@@ -739,26 +730,26 @@
     };
     
     document.getElementById('diceBtn').onclick = function() {
-        const g = parseInt(document.getElementById('diceGuess').value);
+        var g = parseInt(document.getElementById('diceGuess').value);
         if (isNaN(g) || g<1 || g>6) { alert("1-6"); return; }
         playGame('dice', parseFloat(document.getElementById('diceBet').value), g, document.getElementById('diceResult'));
         document.getElementById('diceGuess').value = '';
     };
     
     document.getElementById('rouletteBtn').onclick = function() {
-        const g = parseInt(document.getElementById('rouletteGuess').value);
+        var g = parseInt(document.getElementById('rouletteGuess').value);
         if (isNaN(g) || g<1 || g>10) { alert("1-10"); return; }
         playGame('roulette', parseFloat(document.getElementById('rouletteBet').value), g, document.getElementById('rouletteResult'));
         document.getElementById('rouletteGuess').value = '';
     };
     
     document.getElementById('slotsBtn').onclick = function() {
-        const bet = parseFloat(document.getElementById('slotsBet').value);
+        var bet = parseFloat(document.getElementById('slotsBet').value);
         playSlots(bet, document.getElementById('slotsResult'));
     };
     
     document.getElementById('dice2Btn').onclick = function() {
-        const g = parseInt(document.getElementById('dice2Guess').value);
+        var g = parseInt(document.getElementById('dice2Guess').value);
         if (isNaN(g) || g<2 || g>12) { alert("2-12"); return; }
         playGame('dice2', parseFloat(document.getElementById('dice2Bet').value), g, document.getElementById('dice2Result'));
         document.getElementById('dice2Guess').value = '';
@@ -767,9 +758,9 @@
     document.getElementById('bjHitBtn').onclick = function() { blackjackHit(); };
     document.getElementById('bjStandBtn').onclick = function() { blackjackStand(); };
 
-    // === ПАСХАЛКА 20 КЛИКОВ СО ЗВУКОМ ===
-    let clickCount = 0;
-    const balanceElement = document.getElementById('casinoBalance');
+    // ПАСХАЛКА 20 КЛИКОВ
+    var clickCount = 0;
+    var balanceElement = document.getElementById('casinoBalance');
     if (balanceElement) {
         balanceElement.style.cursor = 'pointer';
         balanceElement.addEventListener('click', function() {
