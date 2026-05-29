@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -92,6 +92,7 @@
 </head>
 <body>
 <div class="container" id="app">
+    <!-- Панель входа -->
     <div id="authPanel">
         <div class="auth-card">
             <h3>🔐 ВХОД</h3>
@@ -103,6 +104,7 @@
         <div id="authMessage" style="text-align:center; color:#f7931a;"></div>
     </div>
 
+    <!-- Панель регистрации -->
     <div id="registerPanel" style="display:none;">
         <div class="register-card">
             <h3>📝 РЕГИСТРАЦИЯ</h3>
@@ -114,6 +116,7 @@
         <div id="regMessage" style="text-align:center; color:#f7931a;"></div>
     </div>
 
+    <!-- Игровая панель -->
     <div id="gamePanel" style="display:none;">
         <div class="balance-card">
             <h2>💰 ИГРОК: <span id="currentUser">-</span></h2>
@@ -141,12 +144,14 @@
         </div>
 
         <div class="games-grid">
+            <!-- Орёл/Решка -->
             <div class="game-card">
                 <h3>🪙 ОРЁЛ / РЕШКА</h3>
                 <select id="coinBet"><option value="1">1 AMD</option><option value="2">2 AMD</option><option value="5">5 AMD</option><option value="10">10 AMD</option><option value="25">25 AMD</option><option value="50">50 AMD</option></select>
                 <div><button id="coinHeads">ОРЁЛ</button> <button id="coinTails">РЕШКА</button></div>
                 <div id="coinResult" class="result"></div>
             </div>
+            <!-- Кубик -->
             <div class="game-card">
                 <h3>🎲 КУБИК (x5)</h3>
                 <select id="diceBet"><option value="1">1 AMD</option><option value="2">2 AMD</option><option value="5">5 AMD</option><option value="10">10 AMD</option><option value="25">25 AMD</option></select>
@@ -154,6 +159,7 @@
                 <button id="diceBtn">КРУТИТЬ</button>
                 <div id="diceResult" class="result"></div>
             </div>
+            <!-- Рулетка 1-10 -->
             <div class="game-card">
                 <h3>🎡 РУЛЕТКА 1-10 (x10)</h3>
                 <select id="rouletteBet"><option value="1">1 AMD</option><option value="2">2 AMD</option><option value="5">5 AMD</option><option value="10">10 AMD</option></select>
@@ -161,6 +167,7 @@
                 <button id="rouletteBtn">КРУТИТЬ</button>
                 <div id="rouletteResult" class="result"></div>
             </div>
+            <!-- Слоты -->
             <div class="game-card">
                 <h3>🎰 СЛОТЫ (x7)</h3>
                 <select id="slotsBet"><option value="1">1 AMD</option><option value="2">2 AMD</option><option value="5">5 AMD</option><option value="10">10 AMD</option></select>
@@ -168,6 +175,7 @@
                 <div id="slotsDisplay" style="font-size:28px; letter-spacing:8px; margin:10px 0;">🍒 🍒 🍒</div>
                 <div id="slotsResult" class="result"></div>
             </div>
+            <!-- Карты (21) -->
             <div class="game-card">
                 <h3>🃏 КАРТЫ (21)</h3>
                 <select id="blackjackBet"><option value="1">1 AMD</option><option value="2">2 AMD</option><option value="5">5 AMD</option><option value="10">10 AMD</option></select>
@@ -175,6 +183,7 @@
                 <div id="bjStatus">Ваши карты: 0 | Очки: 0</div>
                 <div id="bjResult" class="result"></div>
             </div>
+            <!-- Кости (2d6) -->
             <div class="game-card">
                 <h3>🎲 КОСТИ (2d6)</h3>
                 <select id="dice2Bet"><option value="1">1 AMD</option><option value="2">2 AMD</option><option value="5">5 AMD</option><option value="10">10 AMD</option></select>
@@ -187,18 +196,15 @@
 </div>
 
 <script>
-    const SCRIPT_URL = https://script.google.com/macros/s/AKfycbyRRCcHV-jIRqxM-VupbY7Pg_r_BNITQIbZ_p7HVLwgrwlRXgqQRM8zAEAQRyD8KueC/exec
+    // ===== НАСТРОЙКИ (ВСТАВЬ СВОЙ URL) =====
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydycUCWU6KDDzfqZIe07OR8ReqXe2TGxmp44n2HzQRBNYvFdVUyTtNVNl5T_5oz0a5/exec";
     let currentUser = null;
     let bjScore = 0, bjCards = [], bjBet = 0, bjInGame = false;
 
-    async function fetchJSON(url) {
-        const res = await fetch(url);
-        return res.json();
-    }
-
     async function loadUsers() {
         try {
-            const data = await fetchJSON(SCRIPT_URL + "?action=getUsers");
+            const res = await fetch(SCRIPT_URL + "?action=getUsers");
+            const data = await res.json();
             return data.success ? data.users : {};
         } catch(e) { return {}; }
     }
@@ -241,8 +247,7 @@
             document.getElementById('gamePanel').style.display = 'block';
             document.getElementById('currentUser').innerText = currentUser;
             await refreshBalance();
-            const isAdmin = user.isAdmin === true;
-            document.getElementById('adminPanel').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('adminPanel').style.display = user.isAdmin ? 'block' : 'none';
             return true;
         } else {
             document.getElementById('authMessage').innerHTML = '❌ Неверный логин или пароль';
@@ -277,7 +282,6 @@
         const amount = prompt("Введите сумму ввода (AMD):");
         if (amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0) {
             showToast(`✅ Заявка на ввод ${amount} AMD отправлена админу.`);
-            console.log(`Заявка: ${currentUser}, ${amount}`);
         } else showToast("❌ Неверная сумма");
     }
 
@@ -287,13 +291,13 @@
         if (!user) return;
         const required = user.deposited * 2;
         if (user.balance >= required) {
-            if (confirm(`Вывести ${user.balance} AMD? (Депозит: ${user.deposited}, нужно: ${required})`)) {
+            if (confirm(`Вывести ${user.balance} AMD?`)) {
                 await resetBalanceAndDeposited(currentUser);
                 await refreshBalance();
-                showToast(`✅ Выведено ${user.balance} AMD. Баланс обнулён.`);
+                showToast(`✅ Выведено. Баланс обнулён.`);
             }
         } else {
-            showToast(`❌ Недостаточно средств. Нужно ${required} AMD, у вас ${user.balance}.`);
+            showToast(`❌ Нужно минимум ${required} AMD. У вас ${user.balance}.`);
         }
     }
 
@@ -304,7 +308,7 @@
         if (currentUser === login) await refreshBalance();
     }
 
-    // --- Игры (упрощённо) ---
+    // --- Игры ---
     async function playGame(gameType, bet, guess, resultElement) {
         if (!currentUser) return alert("Не авторизован");
         const users = await loadUsers();
@@ -487,7 +491,7 @@
         const amt = parseFloat(document.getElementById('adminNewBalance').value);
         if (!target || isNaN(amt)) { showAdminMessage('Введите логин и сумму'); return; }
         await addBalance(target, -amt);
-        showAdminMessage(`✅ -${amt} AMD dla ${target}`);
+        showAdminMessage(`✅ -${amt} AMD для ${target}`);
         if (currentUser === target) await refreshBalance();
     };
     document.getElementById('adminCreateUserBtn').onclick = async () => {
