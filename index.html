@@ -19,7 +19,7 @@
             background: rgba(30,30,40,0.95);
             border-radius: 24px;
             padding: 20px;
-            width: 320px;
+            width: 350px;
             margin: 20px auto;
             border: 1px solid #f7931a;
         }
@@ -87,13 +87,117 @@
         .bankaroo-field { margin-top: 10px; }
         .bankaroo-field input { width: 100%; }
         small { font-size: 10px; color: #aaa; }
+        
+        /* Галочка и правила */
+        .terms-field {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .terms-field input {
+            width: auto;
+            margin: 0;
+            transform: scale(1.2);
+        }
+        .terms-field label {
+            font-size: 12px;
+            color: #ccc;
+            cursor: pointer;
+        }
+        .view-terms-btn {
+            background: #3a3a4a;
+            color: #f7931a;
+            font-size: 11px;
+            padding: 5px 12px;
+            margin: 0;
+        }
+        
+        /* Модальное окно правил */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #1e1e2a;
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid #f7931a;
+            position: relative;
+        }
+        .modal-content h3 { color: #f7931a; margin-top: 0; }
+        .modal-content p { font-size: 13px; line-height: 1.5; color: #ddd; }
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #f7931a;
+        }
+        .close-modal:hover { color: white; }
+        
         @media (max-width: 700px) {
             .balance-card .balance { font-size: 36px; }
             .games-grid { grid-template-columns: 1fr; }
+            .auth-card, .register-card { width: 95%; }
         }
     </style>
 </head>
 <body>
+
+<!-- Модальное окно с правилами -->
+<div id="termsModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeModalBtn">&times;</span>
+        <h3>📜 ПРАВИЛА И УСЛОВИЯ ИСПОЛЬЗОВАНИЯ BITAMD CASINO</h3>
+        <p><strong>1. Общие положения</strong><br>
+        Настоящий сайт предоставляется исключительно в развлекательных целях. Администрация не несёт ответственности за любые финансовые потери, возникшие в результате использования сайта.</p>
+        
+        <p><strong>2. Возрастные ограничения</strong><br>
+        Использование сайта разрешено только лицам старше 18 лет. Регистрируясь, вы подтверждаете своё совершеннолетие.</p>
+        
+        <p><strong>3. Виртуальная валюта</strong><br>
+        AMD — это игровая валюта, не имеющая реальной ценности. Любые операции с ней происходят в рамках игрового процесса.</p>
+        
+        <p><strong>4. Вывод средств</strong><br>
+        4.1. Вывод возможен только при условии: баланс ≥ внесённая сумма × 2.<br>
+        4.2. Администрация оставляет за собой право отказать в выводе без объяснения причин.<br>
+        4.3. При обнаружении использования багов, ошибок или нечестной игры — вывод блокируется.<br>
+        4.4. Для вывода крупных сумм (≥ 50 AMD) требуется предоставить видео-подтверждение честной игры по запросу администрации.</p>
+        
+        <p><strong>5. Ответственность пользователя</strong><br>
+        Пользователь несёт полную ответственность за сохранность своих логина и пароля. Администрация не возвращает средства, украденные с аккаунта из-за небрежности пользователя.</p>
+        
+        <p><strong>6. Отказ от ответственности</strong><br>
+        Сайт является развлекательной платформой. Администрация:<br>
+        - Не гарантирует доступность сайта 24/7<br>
+        - Не отвечает за задержки или сбои в работе<br>
+        - Оставляет за собой право изменять правила без предварительного уведомления<br>
+        - Не несёт ответственности за любые юридические последствия использования сайта в странах, где азартные игры запрещены</p>
+        
+        <p><strong>7. Доказательства честного выигрыша</strong><br>
+        При выводе суммы от 1000 AMD администрация вправе запросить видеозапись игрового процесса. Без предоставления записи вывод может быть отклонён.</p>
+        
+        <p><strong>8. Заключительные положения</strong><br>
+        Регистрируясь, вы подтверждаете, что ознакомлены и согласны со всеми правилами. Нарушение правил ведёт к блокировке аккаунта без возврата средств.</p>
+        
+        <p style="text-align:center; margin-top:20px;"><button id="agreeAndCloseBtn" style="background:#2c7a4d;">✅ Я ознакомлен и согласен</button></p>
+    </div>
+</div>
+
 <div class="container" id="app">
     <div id="authPanel">
         <div class="auth-card">
@@ -115,6 +219,13 @@
                 <input type="text" id="regBankarooLink" placeholder="Ссылка Bankaroo (https://bnkr.me/618xxx)">
                 <small>Вставь ссылку из карточки Bankaroo</small>
             </div>
+            
+            <!-- ГАЛОЧКА ПРАВИЛ -->
+            <div class="terms-field">
+                <input type="checkbox" id="agreeTerms">
+                <label for="agreeTerms">Я принимаю <button type="button" id="viewTermsBtn" class="view-terms-btn">📜 условия использования</button></label>
+            </div>
+            
             <button id="doRegisterBtn">Зарегистрироваться</button>
             <div class="switch-link" id="showAuthLink">Уже есть аккаунт? Войти</div>
         </div>
@@ -199,6 +310,26 @@
     let currentUser = null;
     let bjScore = 0, bjCards = [], bjBet = 0, bjInGame = false;
 
+    // === МОДАЛЬНОЕ ОКНО ПРАВИЛ ===
+    const modal = document.getElementById('termsModal');
+    const viewTermsBtn = document.getElementById('viewTermsBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const agreeAndCloseBtn = document.getElementById('agreeAndCloseBtn');
+    const agreeTermsCheckbox = document.getElementById('agreeTerms');
+    
+    function openModal() { modal.style.display = 'flex'; }
+    function closeModal() { modal.style.display = 'none'; }
+    
+    if (viewTermsBtn) viewTermsBtn.onclick = openModal;
+    if (closeModalBtn) closeModalBtn.onclick = closeModal;
+    if (agreeAndCloseBtn) {
+        agreeAndCloseBtn.onclick = () => {
+            if (agreeTermsCheckbox) agreeTermsCheckbox.checked = true;
+            closeModal();
+        };
+    }
+    window.onclick = (e) => { if (e.target === modal) closeModal(); };
+    
     function showToast(msg) { alert(msg); }
 
     async function loadUsers() {
@@ -265,13 +396,18 @@
     }
 
     async function registerUser(login, password, bankarooLink) {
+        // ПРОВЕРКА ГАЛОЧКИ!
+        if (!agreeTermsCheckbox.checked) {
+            document.getElementById('regMessage').innerHTML = '❌ Вы должны принять условия использования';
+            return false;
+        }
+        
         const users = await loadUsers();
         if (users[login]) {
             document.getElementById('regMessage').innerHTML = '❌ Логин уже существует';
             return false;
         }
         
-        // Проверяем Bankaroo ссылку
         const check = await checkBankaroo(login, bankarooLink);
         if (!check.success) {
             document.getElementById('regMessage').innerHTML = '❌ ' + check.error;
@@ -302,7 +438,7 @@
         if (!user) return;
         const required = user.deposited * 2;
         if (user.balance >= required) {
-            if (confirm(`Вывести ${user.balance} AMD?`)) {
+            if (confirm(`Вывести ${user.balance} AMD?\n\nВНИМАНИЕ: При выводе крупной суммы (≥1000 AMD) администрация может запросить видео-подтверждение честной игры.`)) {
                 await fetch(`${SCRIPT_URL}?action=withdrawRequest&login=${encodeURIComponent(currentUser)}&amount=${user.balance}`);
                 await resetBalanceAndDeposited(currentUser);
                 await refreshBalance();
@@ -326,7 +462,6 @@
         if (currentUser === login) await refreshBalance();
     }
 
-    // ИГРЫ (такие же как были)
     async function playGame(gameType, bet, guess, resultElement) {
         if (!currentUser) return alert("Не авторизован");
         const users = await loadUsers();
@@ -377,7 +512,6 @@
         setTimeout(() => resultElement.className = 'result', 2000);
     }
 
-    // Блэкджек
     async function blackjackHit() {
         if (!bjInGame) {
             const bet = parseFloat(document.getElementById('blackjackBet').value);
@@ -543,41 +677,4 @@
         const check = await checkBankaroo(login, bankarooLink);
         if (!check.success) { showAdminMessage('❌ ' + check.error); return; }
         await createUser(login, pass, 0, false, check.code);
-        showAdminMessage(`✅ Игрок ${login} создан! (Bankaroo: ${check.name})`);
-    };
-    
-    document.getElementById('coinHeads').onclick = () => playGame('coin', parseFloat(document.getElementById('coinBet').value), 'Орёл', document.getElementById('coinResult'));
-    document.getElementById('coinTails').onclick = () => playGame('coin', parseFloat(document.getElementById('coinBet').value), 'Решка', document.getElementById('coinResult'));
-    
-    document.getElementById('diceBtn').onclick = () => {
-        const g = parseInt(document.getElementById('diceGuess').value);
-        if (isNaN(g) || g<1 || g>6) { alert("1-6"); return; }
-        playGame('dice', parseFloat(document.getElementById('diceBet').value), g, document.getElementById('diceResult'));
-        document.getElementById('diceGuess').value = '';
-    };
-    
-    document.getElementById('rouletteBtn').onclick = () => {
-        const g = parseInt(document.getElementById('rouletteGuess').value);
-        if (isNaN(g) || g<1 || g>10) { alert("1-10"); return; }
-        playGame('roulette', parseFloat(document.getElementById('rouletteBet').value), g, document.getElementById('rouletteResult'));
-        document.getElementById('rouletteGuess').value = '';
-    };
-    
-    document.getElementById('slotsBtn').onclick = () => playGame('slots', parseFloat(document.getElementById('slotsBet').value), 0, document.getElementById('slotsResult'));
-    
-    document.getElementById('dice2Btn').onclick = () => {
-        const g = parseInt(document.getElementById('dice2Guess').value);
-        if (isNaN(g) || g<2 || g>12) { alert("2-12"); return; }
-        playGame('dice2', parseFloat(document.getElementById('dice2Bet').value), g, document.getElementById('dice2Result'));
-        document.getElementById('dice2Guess').value = '';
-    };
-    
-    document.getElementById('bjHitBtn').onclick = () => blackjackHit();
-    document.getElementById('bjStandBtn').onclick = () => blackjackStand();
-
-    document.getElementById('authPanel').style.display = 'block';
-    document.getElementById('registerPanel').style.display = 'none';
-    document.getElementById('gamePanel').style.display = 'none';
-</script>
-</body>
-</html>
+        showAdminMessage(`✅ Игрок ${login} создан! (Bankaroo: ${check.name
