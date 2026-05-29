@@ -22,6 +22,7 @@
             width: 340px;
             margin: 50px auto;
             border: 1px solid #f7931a;
+            position: relative;
         }
         .auth-card input, .register-card input {
             width: 100%;
@@ -44,6 +45,10 @@
             transition: transform 0.1s ease;
         }
         button:active { transform: scale(0.96); }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
         .admin-panel {
             background: rgba(0,0,0,0.6);
             border-radius: 20px;
@@ -94,6 +99,29 @@
         .bankaroo-field { margin-top: 10px; }
         .bankaroo-field input { width: 100%; }
         small { font-size: 10px; color: #aaa; }
+        
+        /* Спиннер */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 10px auto;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .btn-with-spinner {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
         .modal {
             display: none;
             position: fixed;
@@ -119,11 +147,13 @@
         .modal-content h3 { color: #f7931a; margin-top: 0; }
         .modal-content p { font-size: 13px; line-height: 1.5; color: #ddd; }
         .close-modal { position: absolute; top: 10px; right: 20px; font-size: 28px; cursor: pointer; color: #f7931a; }
+        
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); text-shadow: 0 0 10px #4caf50; }
             100% { transform: scale(1); }
         }
+        
         @media (max-width: 700px) {
             .balance-card .balance { font-size: 36px; }
             .games-grid { grid-template-columns: 1fr; }
@@ -149,17 +179,20 @@
 </div>
 
 <div class="container" id="app">
+    <!-- ВХОД -->
     <div id="authPanel">
         <div class="auth-card">
             <h3>🔐 ВХОД</h3>
             <input type="text" id="loginUsername" placeholder="Логин">
             <input type="password" id="loginPassword" placeholder="Пароль">
+            <div id="loginSpinner" class="spinner"></div>
             <button id="doLoginBtn">Войти</button>
             <div class="switch-link" id="showRegisterLink">Нет аккаунта? Зарегистрироваться</div>
         </div>
         <div id="authMessage" style="text-align:center; color:#f7931a;"></div>
     </div>
 
+    <!-- РЕГИСТРАЦИЯ -->
     <div id="registerPanel" style="display:none;">
         <div class="register-card">
             <h3>📝 РЕГИСТРАЦИЯ</h3>
@@ -173,12 +206,14 @@
                 <input type="checkbox" id="agreeTerms">
                 <label for="agreeTerms">Я принимаю <button type="button" id="viewTermsBtn" class="view-terms-btn">📜 условия</button></label>
             </div>
+            <div id="registerSpinner" class="spinner"></div>
             <button id="doRegisterBtn">Зарегистрироваться</button>
             <div class="switch-link" id="showAuthLink">Уже есть аккаунт? Войти</div>
         </div>
         <div id="regMessage" style="text-align:center; color:#f7931a;"></div>
     </div>
 
+    <!-- ИГРОВАЯ ПАНЕЛЬ -->
     <div id="gamePanel" style="display:none;">
         <div class="balance-card">
             <h2>💰 ИГРОК: <span id="currentUser">-</span></h2>
@@ -250,15 +285,16 @@
     let currentUser = null;
     let bjScore = 0, bjCards = [], bjBet = 0, bjInGame = false;
 
+    // === ЗВУК ===
     function playMemSound() {
         try {
-            const audio = new Audio('/mem.mp3');
+            var audio = new Audio('https://abdullaevamet6-glitch.github.io/casiamd/mem.mp3');
             audio.volume = 0.5;
-            audio.play().catch(function(e) { console.log("Звук не загрузился"); });
-        } catch(e) {}
+            audio.play().catch(function(e) { console.log("Звук не загрузился:", e); });
+        } catch(e) { console.log("Ошибка звука:", e); }
     }
 
-    // МОДАЛКА
+    // === МОДАЛКА ===
     var modal = document.getElementById('termsModal');
     var viewTermsBtn = document.getElementById('viewTermsBtn');
     var closeModalBtn = document.getElementById('closeModalBtn');
@@ -283,6 +319,7 @@
     
     function showToast(msg) { alert(msg); }
 
+    // === ОСНОВНЫЕ ФУНКЦИИ ===
     async function loadUsers() {
         try {
             var res = await fetch(SCRIPT_URL + "?action=getUsers");
@@ -330,58 +367,98 @@
         }
     }
 
+    // === ВХОД СО СПИННЕРОМ ===
     async function loginUser(login, password) {
-        var users = await loadUsers();
-        var user = users[login];
-        if (user && user.password === password) {
-            currentUser = login;
-            document.getElementById('authPanel').style.display = 'none';
-            document.getElementById('registerPanel').style.display = 'none';
-            document.getElementById('gamePanel').style.display = 'block';
-            document.getElementById('currentUser').innerText = currentUser;
-            await refreshBalance();
-            var adminPanel = document.getElementById('adminPanel');
-            if (adminPanel) adminPanel.style.display = user.isAdmin ? 'block' : 'none';
-            return true;
-        } else {
-            document.getElementById('authMessage').innerHTML = '❌ Неверный логин или пароль';
+        var loginBtn = document.getElementById('doLoginBtn');
+        var loginSpinner = document.getElementById('loginSpinner');
+        var authMsg = document.getElementById('authMessage');
+        
+        // Блокируем кнопку и показываем спиннер
+        loginBtn.disabled = true;
+        loginSpinner.style.display = 'block';
+        authMsg.innerHTML = '⏳ Проверка данных...';
+        
+        try {
+            var users = await loadUsers();
+            var user = users[login];
+            
+            if (user && user.password === password) {
+                currentUser = login;
+                document.getElementById('authPanel').style.display = 'none';
+                document.getElementById('registerPanel').style.display = 'none';
+                document.getElementById('gamePanel').style.display = 'block';
+                document.getElementById('currentUser').innerText = currentUser;
+                await refreshBalance();
+                var adminPanel = document.getElementById('adminPanel');
+                if (adminPanel) adminPanel.style.display = user.isAdmin ? 'block' : 'none';
+                return true;
+            } else {
+                authMsg.innerHTML = '❌ Неверный логин или пароль';
+                return false;
+            }
+        } catch(e) {
+            authMsg.innerHTML = '❌ Ошибка соединения: ' + e.message;
             return false;
+        } finally {
+            loginBtn.disabled = false;
+            loginSpinner.style.display = 'none';
+            if (document.getElementById('gamePanel').style.display !== 'block') {
+                authMsg.innerHTML = authMsg.innerHTML.replace('⏳ Проверка данных...', '');
+            }
         }
     }
 
+    // === РЕГИСТРАЦИЯ СО СПИННЕРОМ ===
     async function registerUser(login, password, bankarooLink) {
+        var regBtn = document.getElementById('doRegisterBtn');
+        var regSpinner = document.getElementById('registerSpinner');
+        var regMsg = document.getElementById('regMessage');
+        
         if (!agreeTermsCheckbox || !agreeTermsCheckbox.checked) {
-            document.getElementById('regMessage').innerHTML = '❌ Примите условия использования';
+            regMsg.innerHTML = '❌ Примите условия использования';
             return false;
         }
         
-        var users = await loadUsers();
-        if (users[login]) {
-            document.getElementById('regMessage').innerHTML = '❌ Логин уже существует';
+        regBtn.disabled = true;
+        regSpinner.style.display = 'block';
+        regMsg.innerHTML = '⏳ Регистрация...';
+        
+        try {
+            var users = await loadUsers();
+            if (users[login]) {
+                regMsg.innerHTML = '❌ Логин уже существует';
+                return false;
+            }
+            
+            var check = await checkBankaroo(login, bankarooLink);
+            if (!check.success) {
+                regMsg.innerHTML = '❌ ' + check.error;
+                return false;
+            }
+            
+            await createUser(login, password, 0, false, check.code || "");
+            
+            if (check.name) {
+                regMsg.innerHTML = '✅ Регистрация успешна! Добро пожаловать, ' + check.name + '!';
+            } else {
+                regMsg.innerHTML = '✅ Регистрация успешна! Добро пожаловать, ' + login + '!';
+            }
+            
+            setTimeout(function() {
+                document.getElementById('registerPanel').style.display = 'none';
+                document.getElementById('authPanel').style.display = 'block';
+            }, 1500);
+            return true;
+        } catch(e) {
+            regMsg.innerHTML = '❌ Ошибка: ' + e.message;
             return false;
+        } finally {
+            regBtn.disabled = false;
+            regSpinner.style.display = 'none';
         }
-        
-        var check = await checkBankaroo(login, bankarooLink);
-        if (!check.success) {
-            document.getElementById('regMessage').innerHTML = '❌ ' + check.error;
-            return false;
-        }
-        
-        await createUser(login, password, 0, false, check.code || "");
-        
-        if (check.name) {
-            document.getElementById('regMessage').innerHTML = '✅ Регистрация успешна! Добро пожаловать, ' + check.name + '!';
-        } else {
-            document.getElementById('regMessage').innerHTML = '✅ Регистрация успешна! Добро пожаловать, ' + login + '!';
-        }
-        
-        setTimeout(function() {
-            document.getElementById('registerPanel').style.display = 'none';
-            document.getElementById('authPanel').style.display = 'block';
-        }, 1500);
-        return true;
     }
 
+    // === ЗАЯВКИ ===
     function requestDeposit() {
         var amount = prompt("Введите сумму ввода (AMD):");
         if (amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0) {
@@ -423,7 +500,7 @@
         if (currentUser === login) await refreshBalance();
     }
 
-    // СЛОТЫ
+    // === СЛОТЫ ===
     var slotSymbols = ['🍒', '🍋', '🍊', '🍉', '⭐', '💎', '7️⃣'];
     
     function getSlotMultiplier(symbols) {
@@ -538,7 +615,7 @@
         }
     }
 
-    // БЛЭКДЖЕК
+    // === БЛЭКДЖЕК ===
     async function blackjackHit() {
         if (!bjInGame) {
             var bet = parseFloat(document.getElementById('blackjackBet').value);
@@ -625,7 +702,7 @@
         }
     }
 
-    // ВСЕ ОБРАБОТЧИКИ
+    // === ВСЕ ОБРАБОТЧИКИ ===
     document.getElementById('doLoginBtn').onclick = async function() {
         var login = document.getElementById('loginUsername').value.trim();
         var pass = document.getElementById('loginPassword').value.trim();
@@ -758,7 +835,7 @@
     document.getElementById('bjHitBtn').onclick = function() { blackjackHit(); };
     document.getElementById('bjStandBtn').onclick = function() { blackjackStand(); };
 
-    // ПАСХАЛКА 20 КЛИКОВ
+    // === ПАСХАЛКА: 20 КЛИКОВ СО ЗВУКОМ ===
     var clickCount = 0;
     var balanceElement = document.getElementById('casinoBalance');
     if (balanceElement) {
