@@ -187,7 +187,7 @@
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydycUCWU6KDDzfqZIe07OR8ReqXe2TGxmp44n2HzQRBNYvFdVUyTtNVNl5T_5oz0a5/exec";
+    const SCRIPT_URL = https://script.google.com/macros/s/AKfycbyRRCcHV-jIRqxM-VupbY7Pg_r_BNITQIbZ_p7HVLwgrwlRXgqQRM8zAEAQRyD8KueC/exec
     let currentUser = null;
     let bjScore = 0, bjCards = [], bjBet = 0, bjInGame = false;
 
@@ -241,7 +241,8 @@
             document.getElementById('gamePanel').style.display = 'block';
             document.getElementById('currentUser').innerText = currentUser;
             await refreshBalance();
-            document.getElementById('adminPanel').style.display = user.isAdmin ? 'block' : 'none';
+            const isAdmin = user.isAdmin === true;
+            document.getElementById('adminPanel').style.display = isAdmin ? 'block' : 'none';
             return true;
         } else {
             document.getElementById('authMessage').innerHTML = '❌ Неверный логин или пароль';
@@ -486,7 +487,7 @@
         const amt = parseFloat(document.getElementById('adminNewBalance').value);
         if (!target || isNaN(amt)) { showAdminMessage('Введите логин и сумму'); return; }
         await addBalance(target, -amt);
-        showAdminMessage(`✅ -${amt} AMD для ${target}`);
+        showAdminMessage(`✅ -${amt} AMD dla ${target}`);
         if (currentUser === target) await refreshBalance();
     };
     document.getElementById('adminCreateUserBtn').onclick = async () => {
