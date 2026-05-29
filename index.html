@@ -187,8 +187,8 @@
 </div>
 
 <script>
-    // ===== ТВОЙ URL =====
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxKOx17mEIQig8L5XB7b0e0ELaWQ7NtnhrzKXciRNMN34BW7k_mu9UQELzGnAd0VW4S/exec";
+    // ===== ТВОЙ URL (ОБНОВИ, КОГДА СКРИПТ ПЕРЕРАЗВЕРНЁШЬ) =====
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxQTJ3R199JApiY91wDxxvhoyRrz399ZnlMPFCWThRuhgRknJJhdQnPzwccKO1ncL1f/exec";
     let currentUser = null;
     let bjScore = 0, bjCards = [], bjBet = 0, bjInGame = false;
 
@@ -269,7 +269,8 @@
 
     function showToast(msg) { alert(msg); }
 
-        function requestDeposit() {
+    // ========== ИСПРАВЛЕННЫЕ ФУНКЦИИ ==========
+    function requestDeposit() {
         const amount = prompt("Введите сумму ввода (AMD):");
         if (amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0) {
             // Отправляем запрос в Google Apps Script
