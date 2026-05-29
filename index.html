@@ -162,55 +162,42 @@
 </div>
 
 <script>
-    // ===== НАСТРОЙКИ JsonBox =====
-    const API_KEY = 'd13e1fc29bf7add8378b8e5c6f907546';
-    const API_KEY_READ_ONLY = 'ro_17864cdc7b28387b717902b91d4b3f86';
-    const STORE_URL = 'https://jsonbox.ru/api.php?action=store';
-    const GET_URL = 'https://jsonbox.ru/api.php?action=get';
-
+    // ===== НАСТРОЙКИ (ссылка на твой Google Apps Script) =====
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwFeFuwrwJqjsI3ttrh8g4p56yPXcl1vvWtARG2Yh2ZyETx5fJ-Gy6rGt5FMO0Npts2/exec";
     let currentUser = null;
 
-    async function loadUsersFromJsonBox() {
-        try {
-            const response = await fetch(`${GET_URL}&api_key=${API_KEY_READ_ONLY}`);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const data = await response.json();
-            if (data.success && data.data) {
-                return JSON.parse(data.data);
-            } else {
-                // Если данных нет, создаём начальный файл
-                const defaultUsers = {
-                    admin: { password: 'admin123', balance: 10000, isAdmin: true },
-                    Morpex: { password: '97531', balance: 1000, isAdmin: false }
-                };
-                await saveUsersToJsonBox(defaultUsers);
-                return defaultUsers;
-            }
-        } catch (e) {
-            console.error('Ошибка загрузки:', e);
-            document.getElementById('authMessage').innerHTML = '❌ Ошибка загрузки данных';
-            return null;
-        }
+    async function fetchUsers() {
+        const response = await fetch(`${SCRIPT_URL}?action=getUsers`);
+        const data = await response.json();
+        if (data.success) return data.users;
+        throw new Error(data.error);
     }
 
-    async function saveUsersToJsonBox(users) {
-        const response = await fetch(STORE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ api_key: API_KEY, data: JSON.stringify(users) })
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return await response.json();
+    async function setUserBalance(login, balance) {
+        const response = await fetch(`${SCRIPT_URL}?action=setBalance&login=${encodeURIComponent(login)}&balance=${balance}`);
+        const data = await response.json();
+        return data.success;
     }
 
-    async function refreshGameUI() {
+    async function addUserBalance(login, amount) {
+        const response = await fetch(`${SCRIPT_URL}?action=addBalance&login=${encodeURIComponent(login)}&amount=${amount}`);
+        const data = await response.json();
+        return data.success;
+    }
+
+    async function createUser(login, password, balance, isAdmin) {
+        const response = await fetch(`${SCRIPT_URL}?action=createUser&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}&balance=${balance}&isAdmin=${isAdmin}`);
+        const data = await response.json();
+        return data.success;
+    }
+
+    async function refreshUI() {
         if (!currentUser) {
             document.getElementById('authPanel').style.display = 'block';
             document.getElementById('gamePanel').style.display = 'none';
             return;
         }
-        const users = await loadUsersFromJsonBox();
-        if (!users) return;
+        const users = await fetchUsers();
         const user = users[currentUser];
         if (!user) return;
         document.getElementById('authPanel').style.display = 'none';
@@ -222,85 +209,49 @@
     }
 
     async function performLogin(username, password) {
-        const users = await loadUsersFromJsonBox();
-        if (!users) return false;
+        const users = await fetchUsers();
         const user = users[username];
         if (!user || user.password !== password) {
             document.getElementById('authMessage').innerHTML = '❌ Неверный логин или пароль';
             return false;
         }
         currentUser = username;
-        await refreshGameUI();
-        return true;
-    }
-
-    async function updateUserBalance(username, newBalance) {
-        const users = await loadUsersFromJsonBox();
-        if (!users || !users[username]) return false;
-        if (newBalance < 0) newBalance = 0;
-        users[username].balance = newBalance;
-        await saveUsersToJsonBox(users);
-        if (currentUser === username) {
-            document.getElementById('casinoBalance').innerText = newBalance.toFixed(2);
-        }
-        return true;
-    }
-
-    async function addUserBalance(username, amount) {
-        const users = await loadUsersFromJsonBox();
-        if (!users || !users[username]) return false;
-        let newBalance = users[username].balance + amount;
-        if (newBalance < 0) newBalance = 0;
-        users[username].balance = newBalance;
-        await saveUsersToJsonBox(users);
-        if (currentUser === username) {
-            document.getElementById('casinoBalance').innerText = newBalance.toFixed(2);
-        }
-        return true;
-    }
-
-    async function createNewUser(username, password, balance = 100, isAdmin = false) {
-        const users = await loadUsersFromJsonBox();
-        if (!users || users[username]) return false;
-        users[username] = { password, balance, isAdmin };
-        await saveUsersToJsonBox(users);
+        await refreshUI();
         return true;
     }
 
     function showAdminMessage(msg) {
         const el = document.getElementById('adminMsg');
-        if (el) {
-            el.innerHTML = msg;
-            setTimeout(() => { el.innerHTML = ''; }, 3000);
-        }
+        el.innerHTML = msg;
+        setTimeout(() => el.innerHTML = '', 3000);
     }
 
     async function playGame(gameType, bet, guess, resultElement) {
         if (!currentUser) { alert("Вы не авторизованы!"); return; }
-        const users = await loadUsersFromJsonBox();
-        const user = users?.[currentUser];
-        if (!user) { alert("Ошибка пользователя"); return; }
+        const users = await fetchUsers();
+        const user = users[currentUser];
+        if (!user) return;
         if (user.balance < bet) { alert("❌ Недостаточно средств!"); return; }
 
         let isWin = false;
         let winAmount = 0;
-        let displayMessage = "";
+        let displayMsg = "";
 
         if (gameType === 'coin') {
             const result = Math.random() < 0.5 ? 'Орёл' : 'Решка';
             isWin = result === guess;
             winAmount = isWin ? bet * 2 : 0;
-            displayMessage = result;
+            displayMsg = result;
         } else if (gameType === 'dice') {
             const roll = Math.floor(Math.random() * 6) + 1;
             isWin = roll === guess;
             winAmount = isWin ? bet * 5 : 0;
-            displayMessage = `Выпало ${roll}`;
+            displayMsg = `Выпало ${roll}`;
         } else if (gameType === 'roulette') {
             const roll = Math.floor(Math.random() * 10) + 1;
             isWin = roll === guess;
             winAmount = isWin ? bet * 10 : 0;
-            displayMessage = `Выпало ${roll}`;
+            displayMsg = `Выпало ${roll}`;
         } else if (gameType === 'slots') {
             const symbols = ['🍒','🍋','🍊','🍉','⭐','💎','7️⃣'];
             const a = symbols[Math.floor(Math.random()*symbols.length)];
@@ -309,19 +260,19 @@
             document.getElementById('slotsDisplay').innerHTML = `${a} ${b} ${c}`;
             isWin = (a === b && b === c);
             winAmount = isWin ? bet * 7 : 0;
-            displayMessage = `${a} ${b} ${c}`;
+            displayMsg = `${a} ${b} ${c}`;
         }
 
-        user.balance -= bet;
-        if (isWin) user.balance += winAmount;
-        await saveUsersToJsonBox(users);
-        document.getElementById('casinoBalance').innerText = user.balance.toFixed(2);
+        await addUserBalance(currentUser, -bet);
+        if (isWin) await addUserBalance(currentUser, winAmount);
+        const newUsers = await fetchUsers();
+        document.getElementById('casinoBalance').innerText = newUsers[currentUser].balance.toFixed(2);
 
         if (isWin) {
-            resultElement.innerHTML = `🎉 Выигрыш ${winAmount} AMD! ${displayMessage}`;
+            resultElement.innerHTML = `🎉 Выигрыш ${winAmount} AMD! ${displayMsg}`;
             resultElement.className = 'result win';
         } else {
-            resultElement.innerHTML = `😞 Проигрыш ${bet} AMD. ${displayMessage}`;
+            resultElement.innerHTML = `😞 Проигрыш ${bet} AMD. ${displayMsg}`;
             resultElement.className = 'result lose';
         }
         setTimeout(() => resultElement.className = 'result', 2000);
@@ -339,70 +290,61 @@
 
     document.getElementById('logoutBtn').onclick = () => {
         currentUser = null;
-        refreshGameUI();
+        refreshUI();
     };
 
     document.getElementById('adminSetBalance').onclick = async () => {
         const target = document.getElementById('adminTargetUser').value.trim();
         const newBalance = parseFloat(document.getElementById('adminNewBalance').value);
         if (!target || isNaN(newBalance)) { showAdminMessage('Введите логин и баланс'); return; }
-        if (await updateUserBalance(target, newBalance)) {
-            showAdminMessage(`✅ ${target} → ${newBalance} AMD`);
-        } else {
-            showAdminMessage('❌ Игрок не найден');
-        }
+        await setUserBalance(target, newBalance);
+        showAdminMessage(`✅ ${target} → ${newBalance} AMD`);
     };
 
     document.getElementById('adminAddBalance').onclick = async () => {
         const target = document.getElementById('adminTargetUser').value.trim();
         const amount = parseFloat(document.getElementById('adminNewBalance').value);
         if (!target || isNaN(amount)) { showAdminMessage('Введите логин и сумму'); return; }
-        if (await addUserBalance(target, amount)) {
-            showAdminMessage(`✅ +${amount} AMD для ${target}`);
-        } else {
-            showAdminMessage('❌ Игрок не найден');
-        }
+        await addUserBalance(target, amount);
+        showAdminMessage(`✅ +${amount} AMD для ${target}`);
     };
 
     document.getElementById('adminSubtractBalance').onclick = async () => {
         const target = document.getElementById('adminTargetUser').value.trim();
         const amount = parseFloat(document.getElementById('adminNewBalance').value);
         if (!target || isNaN(amount)) { showAdminMessage('Введите логин и сумму'); return; }
-        if (await addUserBalance(target, -amount)) {
-            showAdminMessage(`✅ -${amount} AMD для ${target}`);
-        } else {
-            showAdminMessage('❌ Игрок не найден');
-        }
+        await addUserBalance(target, -amount);
+        showAdminMessage(`✅ -${amount} AMD для ${target}`);
     };
 
     document.getElementById('adminCreateUserBtn').onclick = async () => {
         const newLogin = prompt("Логин нового игрока:");
         if (!newLogin) return;
-        const users = await loadUsersFromJsonBox();
-        if (users?.[newLogin]) { showAdminMessage('❌ Логин уже существует'); return; }
+        const users = await fetchUsers();
+        if (users[newLogin]) { showAdminMessage('❌ Логин уже существует'); return; }
         const newPass = prompt("Пароль:");
         if (!newPass) return;
-        await createNewUser(newLogin, newPass, 100, false);
-        showAdminMessage(`✅ Игрок ${newLogin} создан!`);
+        await createUser(newLogin, newPass, 100, false);
+        showAdminMessage(`✅ Игрок ${newLogin} создан! Баланс 100 AMD.`);
     };
 
     document.getElementById('coinHeads').onclick = () => playGame('coin', parseFloat(document.getElementById('coinBet').value), 'Орёл', document.getElementById('coinResult'));
     document.getElementById('coinTails').onclick = () => playGame('coin', parseFloat(document.getElementById('coinBet').value), 'Решка', document.getElementById('coinResult'));
     document.getElementById('diceBtn').onclick = () => {
         const guess = parseInt(document.getElementById('diceGuess').value);
-        if (isNaN(guess) || guess < 1 || guess > 6) { alert("Число от 1 до 6"); return; }
+        if (isNaN(guess) || guess<1 || guess>6) { alert("Число 1-6"); return; }
         playGame('dice', parseFloat(document.getElementById('diceBet').value), guess, document.getElementById('diceResult'));
         document.getElementById('diceGuess').value = '';
     };
     document.getElementById('rouletteBtn').onclick = () => {
         const guess = parseInt(document.getElementById('rouletteGuess').value);
-        if (isNaN(guess) || guess < 1 || guess > 10) { alert("Число от 1 до 10"); return; }
+        if (isNaN(guess) || guess<1 || guess>10) { alert("Число 1-10"); return; }
         playGame('roulette', parseFloat(document.getElementById('rouletteBet').value), guess, document.getElementById('rouletteResult'));
         document.getElementById('rouletteGuess').value = '';
     };
     document.getElementById('slotsBtn').onclick = () => playGame('slots', parseFloat(document.getElementById('slotsBet').value), null, document.getElementById('slotsResult'));
 
-    refreshGameUI();
+    refreshUI();
 </script>
 </body>
 </html>
