@@ -100,7 +100,6 @@
         .bankaroo-field input { width: 100%; }
         small { font-size: 10px; color: #aaa; }
         
-        /* Спиннер */
         .spinner {
             display: none;
             width: 20px;
@@ -113,13 +112,6 @@
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
-        }
-        .btn-with-spinner {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
         }
         
         .modal {
@@ -168,11 +160,11 @@
     <div class="modal-content">
         <span class="close-modal" id="closeModalBtn">&times;</span>
         <h3>📜 ПРАВИЛА И УСЛОВИЯ</h3>
-        <p><strong>1.</strong> Сайт развлекательный. Администрация не несёт ответственности за финансовые потери.Играя вы автоматически принимаете все условия использования.</p>
-        <p><strong>2.</strong> Адинистрация может отказать в выводе/вводе без причины</p>
+        <p><strong>1.</strong> Сайт развлекательный. Администрация не несёт ответственности за финансовые потери.</p>
+        <p><strong>2.</strong> Только 18+</p>
         <p><strong>3.</strong> Вывод: баланс ≥ депозит × 2</p>
         <p><strong>4.</strong> При багах и нечестной игре — блокировка без вывода</p>
-        <p><strong>5.</strong> Крупные выводы (≥20 AMD) требуют видео-подтверждения</p>
+        <p><strong>5.</strong> Крупные выводы (≥1000 AMD) требуют видео-подтверждения</p>
         <p><strong>6.</strong> Администрация может менять правила без уведомления</p>
         <p style="text-align:center; margin-top:20px;"><button id="agreeAndCloseBtn" style="background:#2c7a4d;">✅ Согласен</button></p>
     </div>
@@ -192,15 +184,15 @@
         <div id="authMessage" style="text-align:center; color:#f7931a;"></div>
     </div>
 
-    <!-- РЕГИСТРАЦИЯ -->
+    <!-- РЕГИСТРАЦИЯ (BANKAROO ОБЯЗАТЕЛЕН) -->
     <div id="registerPanel" style="display:none;">
         <div class="register-card">
             <h3>📝 РЕГИСТРАЦИЯ</h3>
             <input type="text" id="regUsername" placeholder="Логин">
             <input type="password" id="regPassword" placeholder="Пароль">
             <div class="bankaroo-field">
-                <input type="text" id="regBankarooLink" placeholder="Ссылка Bankaroo (необязательно)">
-                <small>Можно пропустить, если нет карточки</small>
+                <input type="text" id="regBankarooLink" placeholder="Ссылка Bankaroo (ОБЯЗАТЕЛЬНО)">
+                <small>Вставь ссылку из карточки Bankaroo! Без неё регистрация невозможна.</small>
             </div>
             <div class="terms-field">
                 <input type="checkbox" id="agreeTerms">
@@ -353,7 +345,7 @@
 
     async function checkBankaroo(login, link) {
         if (!link || link.trim() === "") {
-            return { success: true, code: "", name: login };
+            return { success: false, error: "Bankaroo ссылка обязательна! Вставь ссылку из карточки." };
         }
         var res = await fetch(SCRIPT_URL + "?action=checkBankaroo&login=" + encodeURIComponent(login) + "&bankarooLink=" + encodeURIComponent(link));
         return await res.json();
@@ -367,13 +359,12 @@
         }
     }
 
-    // === ВХОД СО СПИННЕРОМ ===
+    // === ВХОД ===
     async function loginUser(login, password) {
         var loginBtn = document.getElementById('doLoginBtn');
         var loginSpinner = document.getElementById('loginSpinner');
         var authMsg = document.getElementById('authMessage');
         
-        // Блокируем кнопку и показываем спиннер
         loginBtn.disabled = true;
         loginSpinner.style.display = 'block';
         authMsg.innerHTML = '⏳ Проверка данных...';
@@ -408,7 +399,7 @@
         }
     }
 
-    // === РЕГИСТРАЦИЯ СО СПИННЕРОМ ===
+    // === РЕГИСТРАЦИЯ (BANKAROO ОБЯЗАТЕЛЕН) ===
     async function registerUser(login, password, bankarooLink) {
         var regBtn = document.getElementById('doRegisterBtn');
         var regSpinner = document.getElementById('registerSpinner');
@@ -416,6 +407,12 @@
         
         if (!agreeTermsCheckbox || !agreeTermsCheckbox.checked) {
             regMsg.innerHTML = '❌ Примите условия использования';
+            return false;
+        }
+        
+        // Проверка на пустую ссылку Bankaroo
+        if (!bankarooLink || bankarooLink.trim() === "") {
+            regMsg.innerHTML = '❌ Введите ссылку Bankaroo! Она обязательна для регистрации.';
             return false;
         }
         
@@ -458,20 +455,27 @@
         }
     }
 
-    // === ЗАЯВКИ ===
+    // === ЗАЯВКИ (с защитой от 0 AMD) ===
     function requestDeposit() {
         var amount = prompt("Введите сумму ввода (AMD):");
         if (amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0) {
             fetch(SCRIPT_URL + "?action=depositRequest&login=" + encodeURIComponent(currentUser) + "&amount=" + amount)
                 .then(function() { showToast("✅ Заявка на ввод " + amount + " AMD отправлена"); })
                 .catch(function(err) { showToast("❌ Ошибка: " + err); });
-        } else showToast("❌ Неверная сумма");
+        } else showToast("❌ Введите сумму больше 0");
     }
 
     async function requestWithdraw() {
         var users = await loadUsers();
         var user = users[currentUser];
         if (!user) return;
+        
+        // ЗАЩИТА ОТ ВЫВОДА 0 AMD
+        if (user.balance <= 0) {
+            showToast("❌ Нечего выводить! Ваш баланс 0 AMD.");
+            return;
+        }
+        
         var required = user.deposited * 2;
         if (user.balance >= required) {
             if (confirm("Вывести " + user.balance + " AMD?")) {
@@ -788,15 +792,15 @@
         if (users[login]) { showAdminMessage('❌ Логин уже существует'); return; }
         var pass = prompt("Пароль:");
         if (!pass) return;
-        var bankarooLink = prompt("Ссылка Bankaroo (можно пропустить):");
-        var bankarooCode = "";
-        if (bankarooLink && bankarooLink.trim() !== "") {
-            var check = await checkBankaroo(login, bankarooLink);
-            if (!check.success) { showAdminMessage('❌ ' + check.error); return; }
-            bankarooCode = check.code || "";
+        var bankarooLink = prompt("Ссылка Bankaroo (ОБЯЗАТЕЛЬНО):");
+        if (!bankarooLink || bankarooLink.trim() === "") {
+            showAdminMessage('❌ Bankaroo ссылка обязательна!');
+            return;
         }
-        await createUser(login, pass, 0, false, bankarooCode);
-        showAdminMessage("✅ Игрок " + login + " создан!");
+        var check = await checkBankaroo(login, bankarooLink);
+        if (!check.success) { showAdminMessage('❌ ' + check.error); return; }
+        await createUser(login, pass, 0, false, check.code || "");
+        showAdminMessage("✅ Игрок " + login + " создан! (Bankaroo: " + (check.name || login) + ")");
     };
     
     document.getElementById('coinHeads').onclick = function() { 
@@ -835,7 +839,7 @@
     document.getElementById('bjHitBtn').onclick = function() { blackjackHit(); };
     document.getElementById('bjStandBtn').onclick = function() { blackjackStand(); };
 
-    // === ПАСХАЛКА: 20 КЛИКОВ СО ЗВУКОМ ===
+    // === ПАСХАЛКА: 20 КЛИКОВ ===
     var clickCount = 0;
     var balanceElement = document.getElementById('casinoBalance');
     if (balanceElement) {
