@@ -187,17 +187,24 @@
 </div>
 
 <script>
-    // ===== ТВОЙ URL СКРИПТА (ЗАМЕНИ НА СВОЙ!) =====
+    // ===== НОВАЯ ССЫЛКА =====
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbytUC5w4yBtvWKCko--RXDKSpEwCr6YAQhp0mbowbWCtrXd3yRdfE2W-iXAv9g-Yn0/exec";
     
     let currentUser = null;
     let bjScore = 0, bjCards = [], bjBet = 0, bjInGame = false;
 
+    // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
+    function showToast(msg) { 
+        alert(msg); 
+    }
+
     async function loadUsers() {
         try {
-            const res = await fetch(SCRIPT_URL + "?action=getUsers");
+            const url = `${SCRIPT_URL}?action=getUsers`;
+            const res = await fetch(url);
             const data = await res.json();
-            return data.success ? data.users : {};
+            if (data.success) return data.users;
+            return {};
         } catch(e) { 
             console.error("loadUsers error:", e);
             return {}; 
@@ -232,6 +239,7 @@
         }
     }
 
+    // ===== АВТОРИЗАЦИЯ =====
     async function loginUser(login, password) {
         const users = await loadUsers();
         const user = users[login];
@@ -265,14 +273,7 @@
         return true;
     }
 
-    function showAdminMessage(msg) {
-        const el = document.getElementById('adminMsg');
-        el.innerHTML = msg;
-        setTimeout(() => el.innerHTML = '', 3000);
-    }
-
-    function showToast(msg) { alert(msg); }
-
+    // ===== ЗАЯВКИ С ПИСЬМАМИ =====
     function requestDeposit() {
         const amount = prompt("Введите сумму ввода (AMD):");
         if (amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0) {
@@ -299,6 +300,13 @@
         }
     }
 
+    // ===== АДМИН =====
+    function showAdminMessage(msg) {
+        const el = document.getElementById('adminMsg');
+        el.innerHTML = msg;
+        setTimeout(() => el.innerHTML = '', 3000);
+    }
+
     async function confirmDeposit(login, amount) {
         await addBalance(login, amount);
         await addDeposited(login, amount);
@@ -306,12 +314,15 @@
         if (currentUser === login) await refreshBalance();
     }
 
+    // ===== ИГРЫ =====
     async function playGame(gameType, bet, guess, resultElement) {
         if (!currentUser) return alert("Не авторизован");
         const users = await loadUsers();
         const user = users[currentUser];
         if (user.balance < bet) return alert("Недостаточно средств");
+        
         let isWin = false, winAmount = 0, displayMsg = "";
+        
         if (gameType === 'coin') {
             const res = Math.random() < 0.5 ? 'Орёл' : 'Решка';
             isWin = res === guess;
@@ -344,14 +355,17 @@
             winAmount = isWin ? bet * 8 : 0;
             displayMsg = `${r1}+${r2}=${sum}`;
         }
+        
         await addBalance(currentUser, -bet);
         if (isWin) await addBalance(currentUser, winAmount);
         await refreshBalance();
+        
         resultElement.innerHTML = isWin ? `🎉 Выигрыш ${winAmount} AMD! ${displayMsg}` : `😞 Проигрыш ${bet} AMD. ${displayMsg}`;
         resultElement.className = isWin ? 'result win' : 'result lose';
         setTimeout(() => resultElement.className = 'result', 2000);
     }
 
+    // ===== БЛЭКДЖЕК =====
     async function blackjackHit() {
         if (!bjInGame) {
             const bet = parseFloat(document.getElementById('blackjackBet').value);
@@ -368,6 +382,7 @@
             if (bjScore > 21) await blackjackStand();
         }
     }
+    
     function drawCard() {
         let card = Math.floor(Math.random() * 10) + 1;
         let val = card === 1 ? 11 : Math.min(card, 10);
@@ -382,10 +397,12 @@
             }
         }
     }
+    
     function updateBJUI() {
         const str = bjCards.map(c => c.card === 1 ? 'A' : c.card === 11 ? 'J' : c.card === 12 ? 'Q' : c.card === 13 ? 'K' : c.card).join(', ');
         document.getElementById('bjStatus').innerHTML = `Ваши карты: ${str} | Очки: ${bjScore}`;
     }
+    
     async function blackjackStand() {
         if (!bjInGame) return;
         bjInGame = false;
@@ -432,40 +449,47 @@
         setTimeout(()=>el.className='result',3000);
     }
 
-    // Обработчики
+    // ===== НАЗНАЧЕНИЕ ОБРАБОТЧИКОВ (ВСЕ КНОПКИ) =====
     document.getElementById('doLoginBtn').onclick = async () => {
         const login = document.getElementById('loginUsername').value.trim();
         const pass = document.getElementById('loginPassword').value.trim();
         if (!login || !pass) { document.getElementById('authMessage').innerHTML = 'Заполните поля'; return; }
         await loginUser(login, pass);
     };
+    
     document.getElementById('doRegisterBtn').onclick = async () => {
         const login = document.getElementById('regUsername').value.trim();
         const pass = document.getElementById('regPassword').value.trim();
         if (!login || !pass) { document.getElementById('regMessage').innerHTML = 'Заполните поля'; return; }
         await registerUser(login, pass);
     };
+    
     document.getElementById('showRegisterLink').onclick = () => {
         document.getElementById('authPanel').style.display = 'none';
         document.getElementById('registerPanel').style.display = 'block';
     };
+    
     document.getElementById('showAuthLink').onclick = () => {
         document.getElementById('registerPanel').style.display = 'none';
         document.getElementById('authPanel').style.display = 'block';
     };
+    
     document.getElementById('logoutBtn').onclick = () => {
         currentUser = null;
         document.getElementById('authPanel').style.display = 'block';
         document.getElementById('gamePanel').style.display = 'none';
     };
+    
     document.getElementById('depositBtn').onclick = () => requestDeposit();
     document.getElementById('withdrawBtn').onclick = () => requestWithdraw();
+    
     document.getElementById('adminConfirmDepositBtn').onclick = async () => {
         const target = document.getElementById('adminTargetUser').value.trim();
         const amount = parseFloat(document.getElementById('adminNewBalance').value);
         if (!target || isNaN(amount)) { showAdminMessage('Введите логин и сумму'); return; }
         await confirmDeposit(target, amount);
     };
+    
     document.getElementById('adminSetBalance').onclick = async () => {
         const target = document.getElementById('adminTargetUser').value.trim();
         const bal = parseFloat(document.getElementById('adminNewBalance').value);
@@ -474,6 +498,7 @@
         showAdminMessage(`✅ ${target} → ${bal} AMD`);
         if (currentUser === target) await refreshBalance();
     };
+    
     document.getElementById('adminAddBalance').onclick = async () => {
         const target = document.getElementById('adminTargetUser').value.trim();
         const amt = parseFloat(document.getElementById('adminNewBalance').value);
@@ -482,6 +507,7 @@
         showAdminMessage(`✅ +${amt} AMD для ${target}`);
         if (currentUser === target) await refreshBalance();
     };
+    
     document.getElementById('adminSubtractBalance').onclick = async () => {
         const target = document.getElementById('adminTargetUser').value.trim();
         const amt = parseFloat(document.getElementById('adminNewBalance').value);
@@ -490,6 +516,7 @@
         showAdminMessage(`✅ -${amt} AMD для ${target}`);
         if (currentUser === target) await refreshBalance();
     };
+    
     document.getElementById('adminCreateUserBtn').onclick = async () => {
         const login = prompt("Логин нового игрока:");
         if (!login) return;
@@ -500,22 +527,40 @@
         await createUser(login, pass, 0, false);
         showAdminMessage(`✅ Игрок ${login} создан! Баланс 0 AMD.`);
     };
+    
     document.getElementById('coinHeads').onclick = () => playGame('coin', parseFloat(document.getElementById('coinBet').value), 'Орёл', document.getElementById('coinResult'));
     document.getElementById('coinTails').onclick = () => playGame('coin', parseFloat(document.getElementById('coinBet').value), 'Решка', document.getElementById('coinResult'));
+    
     document.getElementById('diceBtn').onclick = () => {
         const g = parseInt(document.getElementById('diceGuess').value);
         if (isNaN(g) || g<1 || g>6) { alert("1-6"); return; }
         playGame('dice', parseFloat(document.getElementById('diceBet').value), g, document.getElementById('diceResult'));
         document.getElementById('diceGuess').value = '';
     };
+    
     document.getElementById('rouletteBtn').onclick = () => {
         const g = parseInt(document.getElementById('rouletteGuess').value);
         if (isNaN(g) || g<1 || g>10) { alert("1-10"); return; }
         playGame('roulette', parseFloat(document.getElementById('rouletteBet').value), g, document.getElementById('rouletteResult'));
         document.getElementById('rouletteGuess').value = '';
     };
+    
     document.getElementById('slotsBtn').onclick = () => playGame('slots', parseFloat(document.getElementById('slotsBet').value), 0, document.getElementById('slotsResult'));
+    
     document.getElementById('dice2Btn').onclick = () => {
         const g = parseInt(document.getElementById('dice2Guess').value);
         if (isNaN(g) || g<2 || g>12) { alert("2-12"); return; }
-        playGame('dice2', parseFloat(document.getElementById('dice
+        playGame('dice2', parseFloat(document.getElementById('dice2Bet').value), g, document.getElementById('dice2Result'));
+        document.getElementById('dice2Guess').value = '';
+    };
+    
+    document.getElementById('bjHitBtn').onclick = () => blackjackHit();
+    document.getElementById('bjStandBtn').onclick = () => blackjackStand();
+
+    // Показываем панель входа
+    document.getElementById('authPanel').style.display = 'block';
+    document.getElementById('registerPanel').style.display = 'none';
+    document.getElementById('gamePanel').style.display = 'none';
+</script>
+</body>
+</html>
