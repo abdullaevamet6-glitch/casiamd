@@ -15,15 +15,15 @@
             min-height: 100vh;
         }
         .container { max-width: 1200px; margin: 0 auto; }
-        .auth-card {
+        .auth-card, .register-card {
             background: rgba(30,30,40,0.95);
             border-radius: 24px;
             padding: 20px;
             width: 280px;
-            margin: 0 auto 20px;
+            margin: 20px auto;
             border: 1px solid #f7931a;
         }
-        .auth-card input {
+        .auth-card input, .register-card input {
             width: 100%;
             padding: 10px;
             margin: 8px 0;
@@ -32,7 +32,7 @@
             background: #2a2a2a;
             color: white;
         }
-        .auth-card button {
+        .auth-card button, .register-card button {
             width: 100%;
             background: #f7931a;
             border: none;
@@ -49,14 +49,6 @@
             margin-bottom: 20px;
             border-left: 5px solid #f7931a;
         }
-        .admin-panel input {
-            background: #2a2a2a;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 30px;
-            color: white;
-            margin: 5px;
-        }
         .balance-card {
             background: linear-gradient(135deg, #f7931a, #ffb347);
             border-radius: 30px;
@@ -67,7 +59,7 @@
         .balance-card .balance { font-size: 48px; font-weight: bold; }
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 20px;
         }
         .game-card {
@@ -90,9 +82,11 @@
         .win { color: #4caf50; }
         .lose { color: #f44336; }
         .logout-btn { background: #555; margin-top: 10px; }
-        .create-user-btn { background: #2c7a4d; margin-left: 10px; }
+        .cashier-btn { background: #2c7a4d; margin: 5px; }
+        .switch-link { text-align: center; margin-top: 10px; font-size: 12px; cursor: pointer; color: #f7931a; }
         @media (max-width: 700px) {
             .balance-card .balance { font-size: 36px; }
+            .games-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -104,8 +98,20 @@
             <input type="text" id="loginUsername" placeholder="Логин">
             <input type="password" id="loginPassword" placeholder="Пароль">
             <button id="doLoginBtn">Войти</button>
+            <div class="switch-link" id="showRegisterLink">Нет аккаунта? Зарегистрироваться</div>
         </div>
         <div id="authMessage" style="text-align:center; color:#f7931a;"></div>
+    </div>
+
+    <div id="registerPanel" style="display:none;">
+        <div class="register-card">
+            <h3>📝 РЕГИСТРАЦИЯ</h3>
+            <input type="text" id="regUsername" placeholder="Логин">
+            <input type="password" id="regPassword" placeholder="Пароль">
+            <button id="doRegisterBtn">Зарегистрироваться</button>
+            <div class="switch-link" id="showAuthLink">Уже есть аккаунт? Войти</div>
+        </div>
+        <div id="regMessage" style="text-align:center; color:#f7931a;"></div>
     </div>
 
     <div id="gamePanel" style="display:none;">
@@ -113,6 +119,10 @@
             <h2>💰 ИГРОК: <span id="currentUser">-</span></h2>
             <div class="balance" id="casinoBalance">0</div>
             <div>BITAMD</div>
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+                <button id="depositBtn" class="cashier-btn">💳 Заявка на ввод</button>
+                <button id="withdrawBtn" class="cashier-btn">💸 Заявка на вывод</button>
+            </div>
             <button id="logoutBtn" class="logout-btn">🚪 Выйти</button>
         </div>
 
@@ -120,8 +130,9 @@
             <h3>🔧 АДМИН-ПАНЕЛЬ</h3>
             <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
                 <input type="text" id="adminTargetUser" placeholder="Логин игрока" style="flex:2;">
-                <input type="number" id="adminNewBalance" placeholder="Новый баланс" style="flex:1;">
-                <button id="adminSetBalance">Установить</button>
+                <input type="number" id="adminNewBalance" placeholder="Сумма" style="flex:1;">
+                <button id="adminConfirmDepositBtn" style="background:#2c7a4d;">✅ Подтвердить ввод</button>
+                <button id="adminSetBalance">Установить баланс</button>
                 <button id="adminAddBalance">➕ Добавить</button>
                 <button id="adminSubtractBalance">➖ Отнять</button>
                 <button id="adminCreateUserBtn" class="create-user-btn">➕ Создать игрока</button>
@@ -157,43 +168,59 @@
                 <div id="slotsDisplay" style="font-size:28px; letter-spacing:8px; margin:10px 0;">🍒 🍒 🍒</div>
                 <div id="slotsResult" class="result"></div>
             </div>
+            <div class="game-card">
+                <h3>🃏 КАРТЫ (21)</h3>
+                <select id="blackjackBet"><option value="1">1 AMD</option><option value="2">2 AMD</option><option value="5">5 AMD</option><option value="10">10 AMD</option></select>
+                <div><button id="bjHitBtn">Взять карту</button> <button id="bjStandBtn">Стоп</button></div>
+                <div id="bjStatus">Ваши карты: 0 | Очки: 0</div>
+                <div id="bjResult" class="result"></div>
+            </div>
+            <div class="game-card">
+                <h3>🎲 КОСТИ (2d6)</h3>
+                <select id="dice2Bet"><option value="1">1 AMD</option><option value="2">2 AMD</option><option value="5">5 AMD</option><option value="10">10 AMD</option></select>
+                <input type="number" id="dice2Guess" min="2" max="12" placeholder="Сумма 2-12" style="width:80px">
+                <button id="dice2Btn">КРУТИТЬ</button>
+                <div id="dice2Result" class="result"></div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // ===== НАСТРОЙКИ =====
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxFlBU98lSubqBm5x-aPHlHTx2uqS7o9P1el7xleJCppgN43UChTB86kFFz3P93fxGh/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwCbsPOpKMzYhJ_cTBp_qKfcu9T3Nd6gazn9EH4vMoFI0_qcr3MSdFhFvVcfjvtPo2T/exec";
     let currentUser = null;
+    let bjScore = 0, bjCards = [], bjBet = 0, bjInGame = false;
+
+    async function fetchJSON(url) {
+        const res = await fetch(url);
+        return res.json();
+    }
 
     async function loadUsers() {
         try {
-            const response = await fetch(SCRIPT_URL + "?action=getUsers");
-            const data = await response.json();
+            const data = await fetchJSON(SCRIPT_URL + "?action=getUsers");
             if (data.success) return data.users;
             return {};
         } catch (e) {
-            console.error("Ошибка загрузки:", e);
+            console.error(e);
             return {};
         }
     }
 
-    async function loginUser(login, password) {
-        const users = await loadUsers();
-        const user = users[login];
-        if (user && user.password === password) {
-            currentUser = login;
-            document.getElementById('authPanel').style.display = 'none';
-            document.getElementById('gamePanel').style.display = 'block';
-            document.getElementById('currentUser').innerText = currentUser;
-            document.getElementById('casinoBalance').innerText = user.balance.toFixed(2);
-            const isAdmin = user.isAdmin === true;
-            document.getElementById('adminPanel').style.display = isAdmin ? 'block' : 'none';
-            return true;
-        } else {
-            document.getElementById('authMessage').innerHTML = '❌ Неверный логин или пароль';
-            return false;
-        }
+    async function addDeposited(login, amount) {
+        await fetch(`${SCRIPT_URL}?action=addDeposited&login=${encodeURIComponent(login)}&amount=${amount}`);
+    }
+
+    async function addBalance(login, amount) {
+        await fetch(`${SCRIPT_URL}?action=addBalance&login=${encodeURIComponent(login)}&amount=${amount}`);
+    }
+
+    async function setBalance(login, amount) {
+        await fetch(`${SCRIPT_URL}?action=setBalance&login=${encodeURIComponent(login)}&balance=${amount}`);
+    }
+
+    async function createUser(login, password, balance, isAdmin) {
+        await fetch(`${SCRIPT_URL}?action=createUser&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}&balance=${balance}&isAdmin=${isAdmin}`);
     }
 
     async function refreshBalance() {
@@ -204,18 +231,37 @@
         }
     }
 
-    async function setUserBalance(login, balance) {
-        await fetch(`${SCRIPT_URL}?action=setBalance&login=${encodeURIComponent(login)}&balance=${balance}`);
-        if (currentUser === login) await refreshBalance();
+    async function loginUser(login, password) {
+        const users = await loadUsers();
+        const user = users[login];
+        if (user && user.password === password) {
+            currentUser = login;
+            document.getElementById('authPanel').style.display = 'none';
+            document.getElementById('registerPanel').style.display = 'none';
+            document.getElementById('gamePanel').style.display = 'block';
+            document.getElementById('currentUser').innerText = currentUser;
+            await refreshBalance();
+            document.getElementById('adminPanel').style.display = user.isAdmin ? 'block' : 'none';
+            return true;
+        } else {
+            document.getElementById('authMessage').innerHTML = '❌ Неверный логин или пароль';
+            return false;
+        }
     }
 
-    async function addUserBalance(login, amount) {
-        await fetch(`${SCRIPT_URL}?action=addBalance&login=${encodeURIComponent(login)}&amount=${amount}`);
-        if (currentUser === login) await refreshBalance();
-    }
-
-    async function createUser(login, password, balance, isAdmin) {
-        await fetch(`${SCRIPT_URL}?action=createUser&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}&balance=${balance}&isAdmin=${isAdmin}`);
+    async function registerUser(login, password) {
+        const users = await loadUsers();
+        if (users[login]) {
+            document.getElementById('regMessage').innerHTML = '❌ Логин уже существует';
+            return false;
+        }
+        await createUser(login, password, 0, false);
+        document.getElementById('regMessage').innerHTML = '✅ Регистрация успешна! Теперь войдите.';
+        setTimeout(() => {
+            document.getElementById('registerPanel').style.display = 'none';
+            document.getElementById('authPanel').style.display = 'block';
+        }, 1500);
+        return true;
     }
 
     function showAdminMessage(msg) {
@@ -224,22 +270,49 @@
         setTimeout(() => el.innerHTML = '', 3000);
     }
 
-    async function playGame(gameType, bet, guess, resultElement) {
-        if (!currentUser) { alert("Вы не авторизованы!"); return; }
+    function showToast(msg) { alert(msg); }
+
+    function requestDeposit() {
+        const amount = prompt("Введите сумму ввода (AMD):");
+        if (amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0) {
+            showToast(`✅ Заявка на ввод ${amount} AMD отправлена админу.`);
+            console.log(`Заявка на ввод: ${currentUser}, сумма: ${amount}`);
+        } else showToast("❌ Неверная сумма");
+    }
+
+    async function requestWithdraw() {
+        const amount = prompt("Введите сумму вывода (AMD):");
+        if (!amount || isNaN(parseFloat(amount))) { showToast("❌ Неверная сумма"); return; }
         const users = await loadUsers();
         const user = users[currentUser];
         if (!user) return;
-        if (user.balance < bet) { alert("❌ Недостаточно средств!"); return; }
+        if (parseFloat(amount) > user.deposited) {
+            showToast(`❌ Нельзя вывести больше, чем было внесено (внесено: ${user.deposited} AMD).`);
+        } else {
+            showToast(`✅ Заявка на вывод ${amount} AMD отправлена админу.`);
+            console.log(`Заявка на вывод: ${currentUser}, сумма: ${amount}`);
+        }
+    }
 
-        let isWin = false;
-        let winAmount = 0;
-        let displayMsg = "";
+    async function confirmDeposit(login, amount) {
+        await addBalance(login, amount);
+        await addDeposited(login, amount);
+        showAdminMessage(`✅ Зачислено ${amount} AMD на счёт ${login}. Внесённая сумма увеличена.`);
+        if (currentUser === login) await refreshBalance();
+    }
 
+    // --- Игры (упрощённо, без изменений) ---
+    async function playGame(gameType, bet, guess, resultElement) {
+        if (!currentUser) return alert("Не авторизован");
+        const users = await loadUsers();
+        const user = users[currentUser];
+        if (user.balance < bet) return alert("Недостаточно средств");
+        let isWin = false, winAmount = 0, displayMsg = "";
         if (gameType === 'coin') {
-            const result = Math.random() < 0.5 ? 'Орёл' : 'Решка';
-            isWin = result === guess;
+            const res = Math.random() < 0.5 ? 'Орёл' : 'Решка';
+            isWin = res === guess;
             winAmount = isWin ? bet * 2 : 0;
-            displayMsg = result;
+            displayMsg = res;
         } else if (gameType === 'dice') {
             const roll = Math.floor(Math.random() * 6) + 1;
             isWin = roll === guess;
@@ -251,28 +324,111 @@
             winAmount = isWin ? bet * 10 : 0;
             displayMsg = `Выпало ${roll}`;
         } else if (gameType === 'slots') {
-            const symbols = ['🍒','🍋','🍊','🍉','⭐','💎','7️⃣'];
-            const a = symbols[Math.floor(Math.random()*symbols.length)];
-            const b = symbols[Math.floor(Math.random()*symbols.length)];
-            const c = symbols[Math.floor(Math.random()*symbols.length)];
+            const sym = ['🍒','🍋','🍊','🍉','⭐','💎','7️⃣'];
+            const a = sym[Math.floor(Math.random()*sym.length)];
+            const b = sym[Math.floor(Math.random()*sym.length)];
+            const c = sym[Math.floor(Math.random()*sym.length)];
             document.getElementById('slotsDisplay').innerHTML = `${a} ${b} ${c}`;
             isWin = (a === b && b === c);
             winAmount = isWin ? bet * 7 : 0;
             displayMsg = `${a} ${b} ${c}`;
+        } else if (gameType === 'dice2') {
+            const r1 = Math.floor(Math.random() * 6) + 1;
+            const r2 = Math.floor(Math.random() * 6) + 1;
+            const sum = r1 + r2;
+            isWin = sum === guess;
+            winAmount = isWin ? bet * 8 : 0;
+            displayMsg = `${r1}+${r2}=${sum}`;
         }
-
-        await addUserBalance(currentUser, -bet);
-        if (isWin) await addUserBalance(currentUser, winAmount);
+        await addBalance(currentUser, -bet);
+        if (isWin) await addBalance(currentUser, winAmount);
         await refreshBalance();
-
-        if (isWin) {
-            resultElement.innerHTML = `🎉 Выигрыш ${winAmount} AMD! ${displayMsg}`;
-            resultElement.className = 'result win';
-        } else {
-            resultElement.innerHTML = `😞 Проигрыш ${bet} AMD. ${displayMsg}`;
-            resultElement.className = 'result lose';
-        }
+        resultElement.innerHTML = isWin ? `🎉 Выигрыш ${winAmount} AMD! ${displayMsg}` : `😞 Проигрыш ${bet} AMD. ${displayMsg}`;
+        resultElement.className = isWin ? 'result win' : 'result lose';
         setTimeout(() => resultElement.className = 'result', 2000);
+    }
+
+    // Блэкджек (упрощённо)
+    async function blackjackHit() {
+        if (!bjInGame) {
+            const bet = parseFloat(document.getElementById('blackjackBet').value);
+            const users = await loadUsers();
+            if (users[currentUser].balance < bet) return alert("Недостаточно средств");
+            bjBet = bet;
+            bjCards = [];
+            bjScore = 0;
+            bjInGame = true;
+            drawCard();
+            drawCard();
+            updateBJUI();
+        } else {
+            drawCard();
+            updateBJUI();
+            if (bjScore > 21) await blackjackStand();
+        }
+    }
+    function drawCard() {
+        let card = Math.floor(Math.random() * 10) + 1;
+        let val = card === 1 ? 11 : Math.min(card, 10);
+        bjCards.push({ card, val });
+        bjScore += val;
+        if (bjScore > 21) {
+            for (let i = 0; i < bjCards.length && bjScore > 21; i++) {
+                if (bjCards[i].card === 1 && bjCards[i].val === 11) {
+                    bjCards[i].val = 1;
+                    bjScore -= 10;
+                }
+            }
+        }
+    }
+    function updateBJUI() {
+        const str = bjCards.map(c => c.card === 1 ? 'A' : c.card === 11 ? 'J' : c.card === 12 ? 'Q' : c.card === 13 ? 'K' : c.card).join(', ');
+        document.getElementById('bjStatus').innerHTML = `Ваши карты: ${str} | Очки: ${bjScore}`;
+    }
+    async function blackjackStand() {
+        if (!bjInGame) return;
+        bjInGame = false;
+        let dealerScore = 0, dealerCards = [];
+        for (let i = 0; i < 2; i++) {
+            let card = Math.floor(Math.random() * 10) + 1;
+            let val = card === 1 ? 11 : Math.min(card, 10);
+            dealerCards.push({ card, val });
+            dealerScore += val;
+        }
+        while (dealerScore < 17) {
+            let card = Math.floor(Math.random() * 10) + 1;
+            let val = card === 1 ? 11 : Math.min(card, 10);
+            dealerCards.push({ card, val });
+            dealerScore += val;
+            if (dealerScore > 21) {
+                for (let i = 0; i < dealerCards.length && dealerScore > 21; i++) {
+                    if (dealerCards[i].card === 1 && dealerCards[i].val === 11) {
+                        dealerCards[i].val = 1;
+                        dealerScore -= 10;
+                    }
+                }
+            }
+        }
+        const dealerStr = dealerCards.map(c => c.card === 1 ? 'A' : c.card === 11 ? 'J' : c.card === 12 ? 'Q' : c.card === 13 ? 'K' : c.card).join(', ');
+        let msg = `Дилер: ${dealerStr} | ${dealerScore} очков. `;
+        let isWin = false, winAmount = 0;
+        if (bjScore > 21) msg += "Перебор! Вы проиграли.";
+        else if (dealerScore > 21 || bjScore > dealerScore) {
+            isWin = true;
+            winAmount = bjBet * 2;
+            msg += `Вы выиграли! +${winAmount} AMD.`;
+        } else if (bjScore === dealerScore) {
+            winAmount = bjBet;
+            isWin = true;
+            msg += "Ничья. Ставка возвращена.";
+        } else msg += "Вы проиграли.";
+        await addBalance(currentUser, -bjBet);
+        if (isWin) await addBalance(currentUser, winAmount);
+        await refreshBalance();
+        const el = document.getElementById('bjResult');
+        el.innerHTML = msg;
+        el.className = isWin ? 'result win' : 'result lose';
+        setTimeout(() => el.className = 'result', 3000);
     }
 
     // --- Обработчики ---
@@ -282,65 +438,93 @@
         if (!login || !pass) { document.getElementById('authMessage').innerHTML = 'Заполните поля'; return; }
         await loginUser(login, pass);
     };
-
+    document.getElementById('doRegisterBtn').onclick = async () => {
+        const login = document.getElementById('regUsername').value.trim();
+        const pass = document.getElementById('regPassword').value.trim();
+        if (!login || !pass) { document.getElementById('regMessage').innerHTML = 'Заполните поля'; return; }
+        await registerUser(login, pass);
+    };
+    document.getElementById('showRegisterLink').onclick = () => {
+        document.getElementById('authPanel').style.display = 'none';
+        document.getElementById('registerPanel').style.display = 'block';
+    };
+    document.getElementById('showAuthLink').onclick = () => {
+        document.getElementById('registerPanel').style.display = 'none';
+        document.getElementById('authPanel').style.display = 'block';
+    };
     document.getElementById('logoutBtn').onclick = () => {
         currentUser = null;
         document.getElementById('authPanel').style.display = 'block';
         document.getElementById('gamePanel').style.display = 'none';
     };
-
+    document.getElementById('depositBtn').onclick = () => requestDeposit();
+    document.getElementById('withdrawBtn').onclick = () => requestWithdraw();
+    document.getElementById('adminConfirmDepositBtn').onclick = async () => {
+        const target = document.getElementById('adminTargetUser').value.trim();
+        const amount = parseFloat(document.getElementById('adminNewBalance').value);
+        if (!target || isNaN(amount)) { showAdminMessage('Введите логин и сумму'); return; }
+        await confirmDeposit(target, amount);
+    };
     document.getElementById('adminSetBalance').onclick = async () => {
         const target = document.getElementById('adminTargetUser').value.trim();
-        const newBalance = parseFloat(document.getElementById('adminNewBalance').value);
-        if (!target || isNaN(newBalance)) { showAdminMessage('Введите логин и баланс'); return; }
-        await setUserBalance(target, newBalance);
-        showAdminMessage(`✅ ${target} → ${newBalance} AMD`);
+        const bal = parseFloat(document.getElementById('adminNewBalance').value);
+        if (!target || isNaN(bal)) { showAdminMessage('Введите логин и баланс'); return; }
+        await setBalance(target, bal);
+        showAdminMessage(`✅ ${target} → ${bal} AMD`);
+        if (currentUser === target) await refreshBalance();
     };
-
     document.getElementById('adminAddBalance').onclick = async () => {
         const target = document.getElementById('adminTargetUser').value.trim();
-        const amount = parseFloat(document.getElementById('adminNewBalance').value);
-        if (!target || isNaN(amount)) { showAdminMessage('Введите логин и сумму'); return; }
-        await addUserBalance(target, amount);
-        showAdminMessage(`✅ +${amount} AMD для ${target}`);
+        const amt = parseFloat(document.getElementById('adminNewBalance').value);
+        if (!target || isNaN(amt)) { showAdminMessage('Введите логин и сумму'); return; }
+        await addBalance(target, amt);
+        showAdminMessage(`✅ +${amt} AMD для ${target}`);
+        if (currentUser === target) await refreshBalance();
     };
-
     document.getElementById('adminSubtractBalance').onclick = async () => {
         const target = document.getElementById('adminTargetUser').value.trim();
-        const amount = parseFloat(document.getElementById('adminNewBalance').value);
-        if (!target || isNaN(amount)) { showAdminMessage('Введите логин и сумму'); return; }
-        await addUserBalance(target, -amount);
-        showAdminMessage(`✅ -${amount} AMD для ${target}`);
+        const amt = parseFloat(document.getElementById('adminNewBalance').value);
+        if (!target || isNaN(amt)) { showAdminMessage('Введите логин и сумму'); return; }
+        await addBalance(target, -amt);
+        showAdminMessage(`✅ -${amt} AMD для ${target}`);
+        if (currentUser === target) await refreshBalance();
     };
-
     document.getElementById('adminCreateUserBtn').onclick = async () => {
-        const newLogin = prompt("Логин нового игрока:");
-        if (!newLogin) return;
+        const login = prompt("Логин нового игрока:");
+        if (!login) return;
         const users = await loadUsers();
-        if (users[newLogin]) { showAdminMessage('❌ Логин уже существует'); return; }
-        const newPass = prompt("Пароль:");
-        if (!newPass) return;
-        await createUser(newLogin, newPass, 100, false);
-        showAdminMessage(`✅ Игрок ${newLogin} создан! Баланс 100 AMD.`);
+        if (users[login]) { showAdminMessage('❌ Логин уже существует'); return; }
+        const pass = prompt("Пароль:");
+        if (!pass) return;
+        await createUser(login, pass, 0, false);
+        showAdminMessage(`✅ Игрок ${login} создан! Баланс 0 AMD.`);
     };
-
     document.getElementById('coinHeads').onclick = () => playGame('coin', parseFloat(document.getElementById('coinBet').value), 'Орёл', document.getElementById('coinResult'));
     document.getElementById('coinTails').onclick = () => playGame('coin', parseFloat(document.getElementById('coinBet').value), 'Решка', document.getElementById('coinResult'));
     document.getElementById('diceBtn').onclick = () => {
-        const guess = parseInt(document.getElementById('diceGuess').value);
-        if (isNaN(guess) || guess<1 || guess>6) { alert("Число 1-6"); return; }
-        playGame('dice', parseFloat(document.getElementById('diceBet').value), guess, document.getElementById('diceResult'));
+        const g = parseInt(document.getElementById('diceGuess').value);
+        if (isNaN(g) || g<1 || g>6) { alert("1-6"); return; }
+        playGame('dice', parseFloat(document.getElementById('diceBet').value), g, document.getElementById('diceResult'));
         document.getElementById('diceGuess').value = '';
     };
     document.getElementById('rouletteBtn').onclick = () => {
-        const guess = parseInt(document.getElementById('rouletteGuess').value);
-        if (isNaN(guess) || guess<1 || guess>10) { alert("Число 1-10"); return; }
-        playGame('roulette', parseFloat(document.getElementById('rouletteBet').value), guess, document.getElementById('rouletteResult'));
+        const g = parseInt(document.getElementById('rouletteGuess').value);
+        if (isNaN(g) || g<1 || g>10) { alert("1-10"); return; }
+        playGame('roulette', parseFloat(document.getElementById('rouletteBet').value), g, document.getElementById('rouletteResult'));
         document.getElementById('rouletteGuess').value = '';
     };
-    document.getElementById('slotsBtn').onclick = () => playGame('slots', parseFloat(document.getElementById('slotsBet').value), null, document.getElementById('slotsResult'));
+    document.getElementById('slotsBtn').onclick = () => playGame('slots', parseFloat(document.getElementById('slotsBet').value), 0, document.getElementById('slotsResult'));
+    document.getElementById('dice2Btn').onclick = () => {
+        const g = parseInt(document.getElementById('dice2Guess').value);
+        if (isNaN(g) || g<2 || g>12) { alert("2-12"); return; }
+        playGame('dice2', parseFloat(document.getElementById('dice2Bet').value), g, document.getElementById('dice2Result'));
+        document.getElementById('dice2Guess').value = '';
+    };
+    document.getElementById('bjHitBtn').onclick = () => blackjackHit();
+    document.getElementById('bjStandBtn').onclick = () => blackjackStand();
 
     document.getElementById('authPanel').style.display = 'block';
+    document.getElementById('registerPanel').style.display = 'none';
     document.getElementById('gamePanel').style.display = 'none';
 </script>
 </body>
