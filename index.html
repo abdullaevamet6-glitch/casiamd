@@ -285,10 +285,11 @@
         const required = user.deposited * 2;
         if (user.balance >= required) {
             if (confirm(`Вывести ${user.balance} AMD?`)) {
+                // Отправляем запрос в Google Apps Script
                 await fetch(`${SCRIPT_URL}?action=withdrawRequest&login=${encodeURIComponent(currentUser)}&amount=${user.balance}`);
                 await resetBalanceAndDeposited(currentUser);
                 await refreshBalance();
-                showToast(`✅ Заявка на вывод отправлена. Баланс обнулён.`);
+                showToast(`✅ Заявка на вывод отправлена. Админ получит уведомление на почту. Баланс обнулён.`);
             }
         } else {
             showToast(`❌ Нужно минимум ${required} AMD. У вас ${user.balance}.`);
