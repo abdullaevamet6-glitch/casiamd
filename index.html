@@ -254,7 +254,17 @@
     async function playRoulette(){ const bet=parseFloat(document.getElementById('rouletteBet').value); const g=parseInt(document.getElementById('rouletteGuess').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); if(isNaN(g)||g<1||g>10)return alert("1-10"); const roll=Math.floor(Math.random()*10)+1; const win=roll===g; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*10); await refreshBalance(); document.getElementById('rouletteResult').innerHTML=win?`🎉 Выигрыш ${bet*10} AMD! (${roll})`:`😞 Проигрыш ${bet} AMD. (${roll})`; }
     async function playSlots(){ const bet=parseFloat(document.getElementById('slotsBet').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); const sym=['🍒','🍋','🍊','🍉','⭐','💎','7️⃣']; const a=sym[Math.floor(Math.random()*sym.length)]; const b=sym[Math.floor(Math.random()*sym.length)]; const c=sym[Math.floor(Math.random()*sym.length)]; document.getElementById('slotsDisplay').innerHTML=`${a} ${b} ${c}`; const win=a===b&&b===c; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*7); await refreshBalance(); document.getElementById('slotsResult').innerHTML=win?`🎉 Выигрыш ${bet*7} AMD!`:`😞 Проигрыш ${bet} AMD.`; }
     async function playDice2(){ const bet=parseFloat(document.getElementById('dice2Bet').value); const g=parseInt(document.getElementById('dice2Guess').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); if(isNaN(g)||g<2||g>12)return alert("2-12"); const r1=Math.floor(Math.random()*6)+1; const r2=Math.floor(Math.random()*6)+1; const sum=r1+r2; const win=sum===g; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*8); await refreshBalance(); document.getElementById('dice2Result').innerHTML=win?`🎉 Выигрыш ${bet*8} AMD! (${r1}+${r2}=${sum})`:`😞 Проигрыш ${bet} AMD. (${r1}+${r2}=${sum})`; }
-    // ========== БЛЭКДЖЕК (полностью встроенный) ==========
+   // ========== ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ (ДЛЯ СООБЩЕНИЙ В ИГРАХ) ==========
+function showGameMessage(elementId, message, isWin) {
+    const el = document.getElementById(elementId);
+    if(el) {
+        el.innerHTML = message;
+        el.style.color = isWin ? '#4caf50' : '#ff6666';
+        setTimeout(() => { if(el) el.innerHTML = ''; }, 3000);
+    }
+}
+
+// ========== БЛЭКДЖЕК ==========
 async function playBlackjack() {
     const bet = parseFloat(document.getElementById('bjBet').value);
     if (isNaN(bet) || bet <= 0) return showGameMessage('bjResult', "Введите ставку!", false);
@@ -320,7 +330,7 @@ async function playBlackjack() {
     await refreshBalance();
 }
 
-// ========== ВИДЕОПОКЕР (встроенный) ==========
+// ========== ВИДЕОПОКЕР ==========
 async function playVideoPoker() {
     const bet = parseFloat(document.getElementById('vpBet').value);
     if (isNaN(bet) || bet <= 0) return showGameMessage('vpResult', "Введите ставку!", false);
@@ -373,7 +383,7 @@ async function playVideoPoker() {
     });
 }
 
-// ========== КРЭПС (настоящий, с кубиками) ==========
+// ========== КРЭПС ==========
 let crapsPoint = null;
 async function rollCraps() {
     const bet = parseFloat(document.getElementById('crapsBet').value);
@@ -384,7 +394,6 @@ async function rollCraps() {
     document.getElementById('crapsDice').innerHTML = `🎲 ${roll} 🎲`;
     
     if(crapsPoint === null) {
-        // первый бросок
         if(roll === 7 || roll === 11) {
             await addBalance(currentUser, bet * 2);
             showGameMessage('crapsResult', `🎲 Выбросили ${roll} — ВЫИГРЫШ! +${bet*2} AMD`, true);
@@ -400,7 +409,6 @@ async function rollCraps() {
             showGameMessage('crapsResult', `🎲 Точка: ${crapsPoint}. Бросайте снова!`, true);
         }
     } else {
-        // последующие броски
         if(roll === crapsPoint) {
             await addBalance(currentUser, bet * 2);
             showGameMessage('crapsResult', `🎲 Выпало ${roll} (точка) — ВЫИГРЫШ! +${bet*2} AMD`, true);
@@ -412,21 +420,10 @@ async function rollCraps() {
             await refreshBalance();
             crapsPoint = null;
         } else {
-            showGameMessage('crapsResult', `🎲 Выпало ${roll}. Ничья. Продолжайте бросать (точка ${crapsPoint})`, true);
+            showGameMessage('crapsResult', `🎲 Выпало ${roll}. Ничья. Продолжайте (точка ${crapsPoint})`, true);
         }
     }
 }
-
-// Вспомогательная функция для отображения сообщений в игре
-function showGameMessage(elementId, message, isWin) {
-    const el = document.getElementById(elementId);
-    if(el) {
-        el.innerHTML = message;
-        el.style.color = isWin ? '#4caf50' : '#ff6666';
-        setTimeout(() => { if(el) el.innerHTML = ''; }, 3000);
-    }
-}
-
     // ========== ПОЛНОЭКРАННЫЙ РЕЖИМ ==========
     const mainDashboard = document.querySelector('.dashboard');
     let gameContainer = null;
