@@ -2,15 +2,15 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BITAMD CASINO — ПОЛНЫЙ ЭКРАН ИГР</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>BITAMD CASINO — 9 игр</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', system-ui;
             background: radial-gradient(circle at 10% 20%, #0a0a0f, #050508);
             color: white;
-            padding: 24px;
+            padding: 20px;
             min-height: 100vh;
         }
         .container { max-width: 1400px; margin: 0 auto; }
@@ -75,8 +75,17 @@
         .balance-box { background: #f7931a; padding: 6px 18px; border-radius: 60px; color: black; font-weight: bold; }
         .cashier-buttons { display: flex; gap: 16px; margin-bottom: 24px; }
         .cashier-buttons button { flex: 1; background: #1e2a2a; border: none; padding: 12px; border-radius: 60px; cursor: pointer; color: white; }
-        .nav-tabs { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
-        .nav-btn { background: #1a1a2a; border: none; padding: 10px 24px; border-radius: 40px; color: #ccc; cursor: pointer; }
+        .nav-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            overflow-x: auto;
+            white-space: nowrap;
+            flex-wrap: nowrap;
+            padding-bottom: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .nav-tabs .nav-btn { flex: 0 0 auto; background: #1a1a2a; border: none; padding: 10px 24px; border-radius: 40px; color: #ccc; cursor: pointer; }
         .nav-btn.active { background: #f7931a; color: black; }
 
         /* КАТАЛОГ */
@@ -99,28 +108,20 @@
         .game-emoji { font-size: 54px; margin-bottom: 12px; }
         .game-title { font-weight: bold; font-size: 0.9rem; }
 
-        /* ОКНО ИГРЫ (ВЕСЬ ЭКРАН) */
+        /* ИГРЫ */
         .game-fullscreen {
             background: #0c0c14;
             border-radius: 48px;
             padding: 28px;
             border: 1px solid #2a2a3a;
-            min-height: 70vh;
+            min-height: 60vh;
         }
-        .game-fullscreen .back-btn {
-            background: #252535;
-            border: none;
-            padding: 8px 24px;
-            border-radius: 40px;
-            color: white;
-            cursor: pointer;
-            margin-bottom: 24px;
-        }
-        .car-card { background: #12121e; border-radius: 28px; padding: 20px; margin: 15px 0; }
-        .car-multiplier { font-size: 40px; color: #f7931a; margin: 10px 0; }
+        .back-btn { background: #252535; border: none; padding: 8px 24px; border-radius: 40px; color: white; cursor: pointer; margin-bottom: 24px; }
         .bet-input { width: 100%; padding: 12px; border-radius: 60px; background: #1e1e2e; border: 1px solid #3a3a4e; color: white; margin: 10px 0; }
         .action-btn { background: #f7931a; border: none; padding: 10px; border-radius: 60px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; }
         .race-btn { background: #2c7a4d; font-size: 1.2rem; padding: 12px; width: 100%; margin: 15px 0; }
+        .car-card { background: #12121e; border-radius: 28px; padding: 20px; margin: 15px 0; }
+        .car-multiplier { font-size: 40px; color: #f7931a; margin: 10px 0; }
         .broken { color: #ff6666; text-decoration: line-through; }
         .account-stats { background: #0f0f18; border-radius: 32px; padding: 28px; text-align: center; }
         .admin-panel { background: #0a0a12; border-radius: 32px; padding: 20px; margin-top: 20px; }
@@ -151,12 +152,8 @@
             <h3>📝 РЕГИСТРАЦИЯ</h3>
             <input type="text" id="regUsername" placeholder="Логин">
             <input type="password" id="regPassword" placeholder="Пароль">
-            <div class="bankaroo-field">
-                <input type="text" id="regBankarooLink" placeholder="Ссылка Bankaroo (необязательно)">
-            </div>
-            <div class="terms-field">
-                <input type="checkbox" id="agreeTerms"> <label for="agreeTerms">Я принимаю условия</label>
-            </div>
+            <div class="bankaroo-field"><input type="text" id="regBankarooLink" placeholder="Ссылка Bankaroo (необязательно)"></div>
+            <div class="terms-field"><input type="checkbox" id="agreeTerms"> <label for="agreeTerms">Я принимаю условия</label></div>
             <div class="spinner" id="registerSpinner"></div>
             <button id="doRegisterBtn">Зарегистрироваться</button>
             <div class="switch-link" id="showAuthLink">Уже есть аккаунт? Войти</div>
@@ -164,64 +161,34 @@
         <div id="regMessage" style="text-align:center; color:#f7931a;"></div>
     </div>
 
-    <!-- ОСНОВНАЯ ПАНЕЛЬ -->
+    <!-- ИГРОВОЙ ЦЕНТР -->
     <div id="gamePanel" style="display:none;">
         <div class="dashboard">
-            <div class="top-bar">
-                <div>🎰 BITAMD CASINO</div>
-                <div class="balance-box">💰 <span id="globalBalance">0</span> AMD</div>
-            </div>
-            <div class="cashier-buttons">
-                <button id="depositBtn">💳 ЗАЯВКА НА ВВОД</button>
-                <button id="withdrawBtn">💸 ЗАЯВКА НА ВЫВОД (x2)</button>
-            </div>
+            <div class="top-bar"><div>🎰 BITAMD CASINO</div><div class="balance-box">💰 <span id="globalBalance">0</span> AMD</div></div>
+            <div class="cashier-buttons"><button id="depositBtn">💳 ЗАЯВКА НА ВВОД</button><button id="withdrawBtn">💸 ЗАЯВКА НА ВЫВОД (x2)</button></div>
             <div class="nav-tabs">
                 <button class="nav-btn active" data-tab="games">🎮 ИГРЫ</button>
                 <button class="nav-btn" data-tab="account">👤 АККАУНТ</button>
                 <button class="nav-btn" id="adminTabBtn" style="display:none;" data-tab="admin">🔧 АДМИН</button>
             </div>
-            <div id="gamesTab" class="tab-content">
-                <div class="games-catalog" id="gamesCatalog"></div>
-            </div>
-            <div id="accountTab" class="tab-content" style="display:none;">
-                <div class="account-stats">
-                    <h3>👤 ПРОФИЛЬ</h3>
-                    <p>Логин: <strong id="accLogin">-</strong></p>
-                    <p>Баланс: <strong id="accBalance">0</strong> AMD</p>
-                    <button id="logoutBtn" class="action-btn" style="background:#555;">🚪 Выйти</button>
-                </div>
-            </div>
-            <div id="adminTab" class="tab-content" style="display:none;">
-                <div class="admin-panel">
-                    <h4>🔧 УПРАВЛЕНИЕ</h4>
-                    <input type="text" id="adminTargetUser" placeholder="Логин игрока" style="width:100%; padding:10px; margin:8px 0; border-radius:60px;">
-                    <input type="number" id="adminNewBalance" placeholder="Сумма" style="width:100%; padding:10px; margin:8px 0; border-radius:60px;">
-                    <button id="adminAddBalance" class="action-btn" style="background:#2c7a4d;">➕ Добавить баланс</button>
-                    <button id="adminSetBalance" class="action-btn" style="background:#f7931a; margin-top:8px;">🎯 Установить баланс</button>
-                </div>
-            </div>
+
+            <div id="gamesTab" class="tab-content"><div class="games-catalog" id="gamesCatalog"></div></div>
+
+            <div id="accountTab" class="tab-content" style="display:none;"><div class="account-stats"><h3>👤 ПРОФИЛЬ</h3><p>Логин: <strong id="accLogin">-</strong></p><p>Баланс: <strong id="accBalance">0</strong> AMD</p><button id="logoutBtn" class="action-btn" style="background:#555;">🚪 Выйти</button></div></div>
+
+            <div id="adminTab" class="tab-content" style="display:none;"><div class="admin-panel"><h4>🔧 УПРАВЛЕНИЕ</h4><input type="text" id="adminTargetUser" placeholder="Логин игрока" style="width:100%; padding:10px; margin:8px 0;"><input type="number" id="adminNewBalance" placeholder="Сумма" style="width:100%; margin:8px 0;"><button id="adminAddBalance" class="action-btn" style="background:#2c7a4d;">➕ Добавить баланс</button><button id="adminSetBalance" class="action-btn" style="background:#f7931a; margin-top:8px;">🎯 Установить баланс</button></div></div>
+
+            <div id="gameFullscreen" style="display:none;"></div>
         </div>
     </div>
 </div>
 
-<div id="betModal" class="modal-overlay">
-    <div class="modal-window">
-        <h3>💸 СТАВКА НА МАШИНУ</h3>
-        <input type="number" id="modalBetAmount" placeholder="Сумма" value="10">
-        <div class="modal-buttons">
-            <button id="confirmBetBtn">ПОДТВЕРДИТЬ</button>
-            <button id="cancelBetBtn">ОТМЕНА</button>
-        </div>
-    </div>
-</div>
+<div id="betModal" class="modal-overlay"><div class="modal-window"><h3>💸 СТАВКА НА МАШИНУ</h3><input type="number" id="modalBetAmount" placeholder="Сумма" value="10"><div class="modal-buttons"><button id="confirmBetBtn">ПОДТВЕРДИТЬ</button><button id="cancelBetBtn">ОТМЕНА</button></div></div></div>
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwiUysaY7wBDETHQEu1chLG_-20wbwGoJ4TyBaVTU1bhkH-VVhKequ-jWnIphZ1wRkb/exec";
     let currentUser = null, isAdmin = false, currentBalance = 0;
-    let cars = [
-        { id: 0, name: "🚗 RED BULL", multiplier: 1.0, activeBet: null, broken: false, interval: null },
-        { id: 1, name: "🏎️ FERRARI", multiplier: 1.0, activeBet: null, broken: false, interval: null }
-    ];
+    let cars = [{ id:0, name:"🚗 RED BULL", multiplier:1.0, activeBet:null, broken:false, interval:null }, { id:1, name:"🏎️ FERRARI", multiplier:1.0, activeBet:null, broken:false, interval:null }];
     let pendingCarId = null;
 
     async function loadUsers() { try { const r=await fetch(SCRIPT_URL+"?action=getUsers"); const d=await r.json(); return d.success?d.users:{}; } catch(e){return {};} }
@@ -248,183 +215,69 @@
     function startRace(){ let any=false; cars.forEach(c=>{ if(c.activeBet!==null&&c.activeBet>0) any=true; if(c.interval)clearInterval(c.interval); c.broken=false; }); if(!any){ alert("Сделайте ставку хотя бы на одну машину"); return; } cars.forEach(c=>{ if(c.activeBet===null||c.activeBet===0)return; c.interval=setInterval(()=>{ if(!c.broken&&c.activeBet){ c.multiplier=Math.min(10,c.multiplier+(Math.random()*0.3+0.1)); renderCars(); if(Math.random()<0.02){ c.broken=true; c.activeBet=null; clearInterval(c.interval); renderCars(); } } else if(!c.activeBet) clearInterval(c.interval); },700); }); renderCars(); }
     function renderCars(){ const g=document.getElementById('carsGrid'); if(!g)return; g.innerHTML=''; cars.forEach(c=>{ const card=document.createElement('div'); card.className='car-card'; card.innerHTML=`<div>${c.name}</div><div class="car-multiplier">x ${c.multiplier.toFixed(2)}</div>${c.activeBet?`<div>💰 Ставка: ${c.activeBet} AMD</div>`:'<div>Нет ставки</div>'}${c.broken?'<div class="broken">💥 СЛОМАНА</div>':''}<input type="number" id="betCar-${c.id}" class="bet-input" placeholder="Сумма" value="10"><button class="action-btn" onclick="openBetModal(${c.id})">💵 ПОСТАВИТЬ</button>${c.activeBet&&!c.broken?`<button class="action-btn" style="background:#2c7a4d;" onclick="cashoutCar(${c.id})">💎 ЗАБРАТЬ</button>`:''}`; g.appendChild(card); }); }
 
-    // === ИГРЫ ===
     async function playCoin(choice){ const bet=parseFloat(document.getElementById('coinBet').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); const res=Math.random()<0.5?'Орёл':'Решка'; const win=(choice==='heads'&&res==='Орёл')||(choice==='tails'&&res==='Решка'); await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*2); await refreshBalance(); document.getElementById('coinResult').innerHTML=win?`🎉 Выигрыш ${bet*2} AMD! (${res})`:`😞 Проигрыш ${bet} AMD. (${res})`; }
     async function playDice(){ const bet=parseFloat(document.getElementById('diceBet').value); const g=parseInt(document.getElementById('diceGuess').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); if(isNaN(g)||g<1||g>6)return alert("1-6"); const roll=Math.floor(Math.random()*6)+1; const win=roll===g; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*5); await refreshBalance(); document.getElementById('diceResult').innerHTML=win?`🎉 Выигрыш ${bet*5} AMD! (${roll})`:`😞 Проигрыш ${bet} AMD. (${roll})`; }
     async function playRoulette(){ const bet=parseFloat(document.getElementById('rouletteBet').value); const g=parseInt(document.getElementById('rouletteGuess').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); if(isNaN(g)||g<1||g>10)return alert("1-10"); const roll=Math.floor(Math.random()*10)+1; const win=roll===g; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*10); await refreshBalance(); document.getElementById('rouletteResult').innerHTML=win?`🎉 Выигрыш ${bet*10} AMD! (${roll})`:`😞 Проигрыш ${bet} AMD. (${roll})`; }
     async function playSlots(){ const bet=parseFloat(document.getElementById('slotsBet').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); const sym=['🍒','🍋','🍊','🍉','⭐','💎','7️⃣']; const a=sym[Math.floor(Math.random()*sym.length)]; const b=sym[Math.floor(Math.random()*sym.length)]; const c=sym[Math.floor(Math.random()*sym.length)]; document.getElementById('slotsDisplay').innerHTML=`${a} ${b} ${c}`; const win=a===b&&b===c; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*7); await refreshBalance(); document.getElementById('slotsResult').innerHTML=win?`🎉 Выигрыш ${bet*7} AMD!`:`😞 Проигрыш ${bet} AMD.`; }
     async function playDice2(){ const bet=parseFloat(document.getElementById('dice2Bet').value); const g=parseInt(document.getElementById('dice2Guess').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); if(isNaN(g)||g<2||g>12)return alert("2-12"); const r1=Math.floor(Math.random()*6)+1; const r2=Math.floor(Math.random()*6)+1; const sum=r1+r2; const win=sum===g; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*8); await refreshBalance(); document.getElementById('dice2Result').innerHTML=win?`🎉 Выигрыш ${bet*8} AMD! (${r1}+${r2}=${sum})`:`😞 Проигрыш ${bet} AMD. (${r1}+${r2}=${sum})`; }
-   // ========== ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ (ДЛЯ СООБЩЕНИЙ В ИГРАХ) ==========
-function showGameMessage(elementId, message, isWin) {
-    const el = document.getElementById(elementId);
-    if(el) {
-        el.innerHTML = message;
-        el.style.color = isWin ? '#4caf50' : '#ff6666';
-        setTimeout(() => { if(el) el.innerHTML = ''; }, 3000);
-    }
-}
 
-// ========== БЛЭКДЖЕК ==========
-async function playBlackjack() {
-    const bet = parseFloat(document.getElementById('bjBet').value);
-    if (isNaN(bet) || bet <= 0) return showGameMessage('bjResult', "Введите ставку!", false);
-    if (bet > currentBalance) return showGameMessage('bjResult', "Недостаточно средств!", false);
-
-    const suits = { 'H': '♥', 'D': '♦', 'C': '♣', 'S': '♠' };
-    const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-    function getCard() {
-        let rank = ranks[Math.floor(Math.random() * ranks.length)];
-        let suit = Object.values(suits)[Math.floor(Math.random() * 4)];
-        let value = rank === 'A' ? 11 : (['K','Q','J'].includes(rank) ? 10 : parseInt(rank));
-        return { rank, suit, value, display: `${rank}${suit}` };
-    }
-    function sumHand(hand) {
-        let sum = hand.reduce((a,c)=>a+c.value,0);
-        let aces = hand.filter(c=>c.rank==='A').length;
-        while(sum > 21 && aces > 0) { sum -= 10; aces--; }
-        return sum;
+    function showGameMessage(elementId, message, isWin) {
+        const el = document.getElementById(elementId);
+        if(el) { el.innerHTML = message; el.style.color = isWin ? '#4caf50' : '#ff6666'; setTimeout(() => { if(el) el.innerHTML = ''; }, 3000); }
     }
 
-    let player = [getCard(), getCard()];
-    let dealer = [getCard(), getCard()];
-    let pSum = sumHand(player);
-    let dSum = sumHand(dealer);
-
-    function updateUI() {
-        document.getElementById('bjCards').innerHTML = `<strong>Ваши карты:</strong> ${player.map(c=>c.display).join(", ")} (очки: ${pSum})<br>
-        <strong>Дилер:</strong> ${dealer[0].display} (скрыта)`;
-    }
-    updateUI();
-
-    while(pSum < 21 && confirm("Ещё карту?")) {
-        player.push(getCard());
-        pSum = sumHand(player);
+    async function playBlackjack() {
+        const bet = parseFloat(document.getElementById('bjBet').value);
+        if (isNaN(bet) || bet <= 0) return showGameMessage('bjResult', "Введите ставку!", false);
+        if (bet > currentBalance) return showGameMessage('bjResult', "Недостаточно средств!", false);
+        const suits = { 'H': '♥', 'D': '♦', 'C': '♣', 'S': '♠' };
+        const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+        function getCard() { let rank = ranks[Math.floor(Math.random() * ranks.length)]; let suit = Object.values(suits)[Math.floor(Math.random() * 4)]; let value = rank === 'A' ? 11 : (['K','Q','J'].includes(rank) ? 10 : parseInt(rank)); return { rank, suit, value, display: `${rank}${suit}` }; }
+        function sumHand(hand) { let sum = hand.reduce((a,c)=>a+c.value,0); let aces = hand.filter(c=>c.rank==='A').length; while(sum > 21 && aces > 0) { sum -= 10; aces--; } return sum; }
+        let player = [getCard(), getCard()]; let dealer = [getCard(), getCard()]; let pSum = sumHand(player); let dSum = sumHand(dealer);
+        function updateUI() { document.getElementById('bjCards').innerHTML = `<strong>Ваши карты:</strong> ${player.map(c=>c.display).join(", ")} (очки: ${pSum})<br><strong>Дилер:</strong> ${dealer[0].display} (скрыта)`; }
         updateUI();
-    }
-
-    if(pSum > 21) {
-        await addBalance(currentUser, -bet);
+        while(pSum < 21 && confirm("Ещё карту?")) { player.push(getCard()); pSum = sumHand(player); updateUI(); }
+        if(pSum > 21) { await addBalance(currentUser, -bet); await refreshBalance(); showGameMessage('bjResult', `Перебор! Вы проиграли ${bet} AMD.`, false); return; }
+        while(dSum < 17) { dealer.push(getCard()); dSum = sumHand(dealer); }
+        document.getElementById('bjCards').innerHTML = `<strong>Ваши карты:</strong> ${player.map(c=>c.display).join(", ")} (очки: ${pSum})<br><strong>Дилер:</strong> ${dealer.map(c=>c.display).join(", ")} (очки: ${dSum})`;
+        if(dSum > 21 || pSum > dSum) { let win = bet * 2; await addBalance(currentUser, win); showGameMessage('bjResult', `Вы выиграли ${win} AMD!`, true); }
+        else if(pSum === dSum) { await addBalance(currentUser, bet); showGameMessage('bjResult', `Ничья, ставка возвращена.`, true); }
+        else { await addBalance(currentUser, -bet); showGameMessage('bjResult', `Вы проиграли ${bet} AMD.`, false); }
         await refreshBalance();
-        showGameMessage('bjResult', `Перебор! Вы проиграли ${bet} AMD.`, false);
-        return;
     }
 
-    while(dSum < 17) {
-        dealer.push(getCard());
-        dSum = sumHand(dealer);
+    async function playVideoPoker() {
+        const bet = parseFloat(document.getElementById('vpBet').value);
+        if (isNaN(bet) || bet <= 0) return showGameMessage('vpResult', "Введите ставку!", false);
+        if (bet > currentBalance) return showGameMessage('vpResult', "Недостаточно средств!", false);
+        const ranks = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"]; const suits = ["♥","♦","♣","♠"];
+        let deck = []; for(let r of ranks) for(let s of suits) deck.push(r+s);
+        for(let i=deck.length-1;i>0;i--){ let j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
+        let hand = deck.slice(0,5);
+        function updateHand() { let html = '<div style="display:flex; gap:10px; flex-wrap:wrap; margin:10px 0;">'; hand.forEach((card,idx) => { html += `<div style="background:#1e1e2e; padding:8px 16px; border-radius:16px;">${card}<br><input type="checkbox" id="hold${idx}" value="${idx}"> Замена</div>`; }); html += '</div>'; document.getElementById('vpHand').innerHTML = html; }
+        updateHand();
+        await new Promise(resolve => { let btn = document.createElement('button'); btn.innerText = "Заменить выбранные"; btn.className = "action-btn"; btn.onclick = async () => { let indices = []; for(let i=0;i<5;i++) { let cb = document.getElementById(`hold${i}`); if(cb && cb.checked) indices.push(i); } for(let idx of indices) hand[idx] = deck[5 + idx]; let newHand = hand.join(", "); let payout = 0; if(newHand.match(/(\w+♥.*\1♥.*\1♥.*\1♥)/)) payout = bet * 50; else if(newHand.match(/(\w+[♥♦♣♠].*\1.*\1.*\1)/)) payout = bet * 25; else if(newHand.match(/(\w+[♥♦♣♠].*\1.*\1)/)) payout = bet * 5; else payout = 0; if(payout > 0) { await addBalance(currentUser, payout); showGameMessage('vpResult', `Вы выиграли ${payout} AMD! (комбинация: ${newHand})`, true); } else { await addBalance(currentUser, -bet); showGameMessage('vpResult', `Проигрыш. Ваши карты: ${newHand}`, false); } await refreshBalance(); btn.remove(); resolve(); }; document.getElementById('vpHand').appendChild(btn); });
     }
-    document.getElementById('bjCards').innerHTML = `<strong>Ваши карты:</strong> ${player.map(c=>c.display).join(", ")} (очки: ${pSum})<br>
-    <strong>Дилер:</strong> ${dealer.map(c=>c.display).join(", ")} (очки: ${dSum})`;
 
-    if(dSum > 21 || pSum > dSum) {
-        let win = bet * 2;
-        await addBalance(currentUser, win);
-        showGameMessage('bjResult', `Вы выиграли ${win} AMD!`, true);
-    } else if(pSum === dSum) {
-        await addBalance(currentUser, bet);
-        showGameMessage('bjResult', `Ничья, ставка возвращена.`, true);
-    } else {
-        await addBalance(currentUser, -bet);
-        showGameMessage('bjResult', `Вы проиграли ${bet} AMD.`, false);
-    }
-    await refreshBalance();
-}
-
-// ========== ВИДЕОПОКЕР ==========
-async function playVideoPoker() {
-    const bet = parseFloat(document.getElementById('vpBet').value);
-    if (isNaN(bet) || bet <= 0) return showGameMessage('vpResult', "Введите ставку!", false);
-    if (bet > currentBalance) return showGameMessage('vpResult', "Недостаточно средств!", false);
-    
-    const ranks = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
-    const suits = ["♥","♦","♣","♠"];
-    let deck = [];
-    for(let r of ranks) for(let s of suits) deck.push(r+s);
-    for(let i=deck.length-1;i>0;i--){ let j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
-    let hand = deck.slice(0,5);
-    
-    function updateHand() {
-        let html = '<div style="display:flex; gap:10px; flex-wrap:wrap; margin:10px 0;">';
-        hand.forEach((card,idx) => { html += `<div style="background:#1e1e2e; padding:8px 16px; border-radius:16px;">${card}<br><input type="checkbox" id="hold${idx}" value="${idx}"> Замена</div>`; });
-        html += '</div>';
-        document.getElementById('vpHand').innerHTML = html;
-    }
-    updateHand();
-    
-    await new Promise(resolve => {
-        let btn = document.createElement('button');
-        btn.innerText = "Заменить выбранные";
-        btn.className = "action-btn";
-        btn.onclick = async () => {
-            let indices = [];
-            for(let i=0;i<5;i++) {
-                let cb = document.getElementById(`hold${i}`);
-                if(cb && cb.checked) indices.push(i);
-            }
-            for(let idx of indices) hand[idx] = deck[5 + idx];
-            let newHand = hand.join(", ");
-            let payout = 0;
-            if(newHand.match(/(\w+♥.*\1♥.*\1♥.*\1♥)/)) payout = bet * 50;
-            else if(newHand.match(/(\w+[♥♦♣♠].*\1.*\1.*\1)/)) payout = bet * 25;
-            else if(newHand.match(/(\w+[♥♦♣♠].*\1.*\1)/)) payout = bet * 5;
-            else payout = 0;
-            if(payout > 0) {
-                await addBalance(currentUser, payout);
-                showGameMessage('vpResult', `Вы выиграли ${payout} AMD! (комбинация: ${newHand})`, true);
-            } else {
-                await addBalance(currentUser, -bet);
-                showGameMessage('vpResult', `Проигрыш. Ваши карты: ${newHand}`, false);
-            }
-            await refreshBalance();
-            btn.remove();
-            resolve();
-        };
-        document.getElementById('vpHand').appendChild(btn);
-    });
-}
-
-// ========== КРЭПС ==========
-let crapsPoint = null;
-async function rollCraps() {
-    const bet = parseFloat(document.getElementById('crapsBet').value);
-    if (isNaN(bet) || bet <= 0) return showGameMessage('crapsResult', "Введите ставку!", false);
-    if (bet > currentBalance) return showGameMessage('crapsResult', "Недостаточно средств!", false);
-    
-    let roll = Math.floor(Math.random()*6)+1 + Math.floor(Math.random()*6)+1;
-    document.getElementById('crapsDice').innerHTML = `🎲 ${roll} 🎲`;
-    
-    if(crapsPoint === null) {
-        if(roll === 7 || roll === 11) {
-            await addBalance(currentUser, bet * 2);
-            showGameMessage('crapsResult', `🎲 Выбросили ${roll} — ВЫИГРЫШ! +${bet*2} AMD`, true);
-            await refreshBalance();
-            crapsPoint = null;
-        } else if(roll === 2 || roll === 3 || roll === 12) {
-            await addBalance(currentUser, -bet);
-            showGameMessage('crapsResult', `🎲 Выбросили ${roll} — ПРОИГРЫШ. -${bet} AMD`, false);
-            await refreshBalance();
-            crapsPoint = null;
+    let crapsPoint = null;
+    async function rollCraps() {
+        const bet = parseFloat(document.getElementById('crapsBet').value);
+        if (isNaN(bet) || bet <= 0) return showGameMessage('crapsResult', "Введите ставку!", false);
+        if (bet > currentBalance) return showGameMessage('crapsResult', "Недостаточно средств!", false);
+        let roll = Math.floor(Math.random()*6)+1 + Math.floor(Math.random()*6)+1;
+        document.getElementById('crapsDice').innerHTML = `🎲 ${roll} 🎲`;
+        if(crapsPoint === null) {
+            if(roll === 7 || roll === 11) { await addBalance(currentUser, bet * 2); showGameMessage('crapsResult', `🎲 Выбросили ${roll} — ВЫИГРЫШ! +${bet*2} AMD`, true); await refreshBalance(); crapsPoint = null; }
+            else if(roll === 2 || roll === 3 || roll === 12) { await addBalance(currentUser, -bet); showGameMessage('crapsResult', `🎲 Выбросили ${roll} — ПРОИГРЫШ. -${bet} AMD`, false); await refreshBalance(); crapsPoint = null; }
+            else { crapsPoint = roll; showGameMessage('crapsResult', `🎲 Точка: ${crapsPoint}. Бросайте снова!`, true); }
         } else {
-            crapsPoint = roll;
-            showGameMessage('crapsResult', `🎲 Точка: ${crapsPoint}. Бросайте снова!`, true);
-        }
-    } else {
-        if(roll === crapsPoint) {
-            await addBalance(currentUser, bet * 2);
-            showGameMessage('crapsResult', `🎲 Выпало ${roll} (точка) — ВЫИГРЫШ! +${bet*2} AMD`, true);
-            await refreshBalance();
-            crapsPoint = null;
-        } else if(roll === 7) {
-            await addBalance(currentUser, -bet);
-            showGameMessage('crapsResult', `🎲 Выпало 7 — ПРОИГРЫШ. -${bet} AMD`, false);
-            await refreshBalance();
-            crapsPoint = null;
-        } else {
-            showGameMessage('crapsResult', `🎲 Выпало ${roll}. Ничья. Продолжайте (точка ${crapsPoint})`, true);
+            if(roll === crapsPoint) { await addBalance(currentUser, bet * 2); showGameMessage('crapsResult', `🎲 Выпало ${roll} (точка) — ВЫИГРЫШ! +${bet*2} AMD`, true); await refreshBalance(); crapsPoint = null; }
+            else if(roll === 7) { await addBalance(currentUser, -bet); showGameMessage('crapsResult', `🎲 Выпало 7 — ПРОИГРЫШ. -${bet} AMD`, false); await refreshBalance(); crapsPoint = null; }
+            else { showGameMessage('crapsResult', `🎲 Выпало ${roll}. Ничья. Продолжайте (точка ${crapsPoint})`, true); }
         }
     }
-}
-    // ========== ПОЛНОЭКРАННЫЙ РЕЖИМ ==========
+
     const mainDashboard = document.querySelector('.dashboard');
     let gameContainer = null;
     function showGame(gameId){
@@ -434,45 +287,34 @@ async function rollCraps() {
         let html = '<div class="game-fullscreen"><button class="back-btn" onclick="closeGame()">← К ИГРАМ</button>';
         if(gameId === 'car'){
             html += `<h2>🚗 CAR RACE</h2><div id="carsGrid"></div><button id="startRaceBtn" class="race-btn">🚦 НАЧАТЬ ГОНКУ</button>`;
-            gameContainer.innerHTML = html;
-            renderCars();
-            document.getElementById('startRaceBtn').onclick = startRace;
+            gameContainer.innerHTML = html; renderCars(); document.getElementById('startRaceBtn').onclick = startRace;
         } else if(gameId === 'coin'){
             html += `<h2>🪙 ОРЁЛ / РЕШКА</h2><input type="number" id="coinBet" class="bet-input" placeholder="Ставка" value="10"><div style="display:flex; gap:10px;"><button id="coinHeads" class="action-btn">ОРЁЛ</button><button id="coinTails" class="action-btn">РЕШКА</button></div><div id="coinResult"></div>`;
-            gameContainer.innerHTML = html;
-            document.getElementById('coinHeads').onclick = () => playCoin('heads');
-            document.getElementById('coinTails').onclick = () => playCoin('tails');
+            gameContainer.innerHTML = html; document.getElementById('coinHeads').onclick = () => playCoin('heads'); document.getElementById('coinTails').onclick = () => playCoin('tails');
         } else if(gameId === 'dice'){
             html += `<h2>🎲 КУБИК (x5)</h2><input type="number" id="diceBet" class="bet-input" placeholder="Ставка" value="10"><input type="number" id="diceGuess" class="bet-input" placeholder="1-6"><button id="diceBtn" class="action-btn">КРУТИТЬ</button><div id="diceResult"></div>`;
-            gameContainer.innerHTML = html;
-            document.getElementById('diceBtn').onclick = playDice;
+            gameContainer.innerHTML = html; document.getElementById('diceBtn').onclick = playDice;
         } else if(gameId === 'roulette'){
             html += `<h2>🎡 РУЛЕТКА (x10)</h2><input type="number" id="rouletteBet" class="bet-input" placeholder="Ставка" value="10"><input type="number" id="rouletteGuess" class="bet-input" placeholder="1-10"><button id="rouletteBtn" class="action-btn">КРУТИТЬ</button><div id="rouletteResult"></div>`;
-            gameContainer.innerHTML = html;
-            document.getElementById('rouletteBtn').onclick = playRoulette;
+            gameContainer.innerHTML = html; document.getElementById('rouletteBtn').onclick = playRoulette;
         } else if(gameId === 'slots'){
             html += `<h2>🎰 СЛОТЫ (x7)</h2><input type="number" id="slotsBet" class="bet-input" placeholder="Ставка" value="10"><button id="slotsBtn" class="action-btn">КРУТИТЬ</button><div id="slotsDisplay" style="font-size:32px; text-align:center; margin:15px 0;">🍒 🍒 🍒</div><div id="slotsResult"></div>`;
-            gameContainer.innerHTML = html;
-            document.getElementById('slotsBtn').onclick = playSlots;
+            gameContainer.innerHTML = html; document.getElementById('slotsBtn').onclick = playSlots;
         } else if(gameId === 'dice2'){
             html += `<h2>🎲 КОСТИ 2d6 (x8)</h2><input type="number" id="dice2Bet" class="bet-input" placeholder="Ставка" value="10"><input type="number" id="dice2Guess" class="bet-input" placeholder="2-12"><button id="dice2Btn" class="action-btn">КРУТИТЬ</button><div id="dice2Result"></div>`;
-            gameContainer.innerHTML = html;
-            document.getElementById('dice2Btn').onclick = playDice2;
+            gameContainer.innerHTML = html; document.getElementById('dice2Btn').onclick = playDice2;
         } else if(gameId === 'blackjack'){
-            html += `<h2>🃏 БЛЭКДЖЕК</h2><button class="action-btn" onclick="playBlackjack()">ИГРАТЬ</button>`;
+            html += `<h2>🃏 БЛЭКДЖЕК</h2><input type="number" id="bjBet" class="bet-input" placeholder="Ставка" value="10"><div id="bjCards" style="margin:15px 0;"></div><button class="action-btn" onclick="playBlackjack()">ИГРАТЬ</button><div id="bjResult"></div>`;
             gameContainer.innerHTML = html;
         } else if(gameId === 'videopoker'){
-            html += `<h2>🎰 ВИДЕОПОКЕР</h2><button class="action-btn" onclick="playVideoPoker()">ИГРАТЬ</button>`;
+            html += `<h2>🎰 ВИДЕОПОКЕР</h2><input type="number" id="vpBet" class="bet-input" placeholder="Ставка" value="10"><div id="vpHand"></div><button class="action-btn" onclick="playVideoPoker()">ИГРАТЬ</button><div id="vpResult"></div>`;
             gameContainer.innerHTML = html;
         } else if(gameId === 'craps'){
-            html += `<h2>🎲 КРЭПС</h2><button class="action-btn" onclick="playCraps()">ИГРАТЬ</button>`;
+            html += `<h2>🎲 КРЭПС</h2><input type="number" id="crapsBet" class="bet-input" placeholder="Ставка" value="10"><div id="crapsDice" style="font-size:48px; text-align:center; margin:15px 0;">🎲 🎲</div><button class="action-btn" onclick="rollCraps()">БРОСИТЬ КУБИКИ</button><div id="crapsResult"></div>`;
             gameContainer.innerHTML = html;
         }
     }
-    function closeGame(){
-        mainDashboard.style.display = 'block';
-        if(gameContainer) gameContainer.style.display = 'none';
-    }
+    function closeGame(){ mainDashboard.style.display = 'block'; if(gameContainer) gameContainer.style.display = 'none'; }
 
     const gameList = [
         { name: "CAR RACE", emoji: "🚗", handler: () => showGame('car') },
