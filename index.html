@@ -254,10 +254,11 @@
     async function playRoulette(){ const bet=parseFloat(document.getElementById('rouletteBet').value); const g=parseInt(document.getElementById('rouletteGuess').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); if(isNaN(g)||g<1||g>10)return alert("1-10"); const roll=Math.floor(Math.random()*10)+1; const win=roll===g; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*10); await refreshBalance(); document.getElementById('rouletteResult').innerHTML=win?`🎉 Выигрыш ${bet*10} AMD! (${roll})`:`😞 Проигрыш ${bet} AMD. (${roll})`; }
     async function playSlots(){ const bet=parseFloat(document.getElementById('slotsBet').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); const sym=['🍒','🍋','🍊','🍉','⭐','💎','7️⃣']; const a=sym[Math.floor(Math.random()*sym.length)]; const b=sym[Math.floor(Math.random()*sym.length)]; const c=sym[Math.floor(Math.random()*sym.length)]; document.getElementById('slotsDisplay').innerHTML=`${a} ${b} ${c}`; const win=a===b&&b===c; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*7); await refreshBalance(); document.getElementById('slotsResult').innerHTML=win?`🎉 Выигрыш ${bet*7} AMD!`:`😞 Проигрыш ${bet} AMD.`; }
     async function playDice2(){ const bet=parseFloat(document.getElementById('dice2Bet').value); const g=parseInt(document.getElementById('dice2Guess').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); if(isNaN(g)||g<2||g>12)return alert("2-12"); const r1=Math.floor(Math.random()*6)+1; const r2=Math.floor(Math.random()*6)+1; const sum=r1+r2; const win=sum===g; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*8); await refreshBalance(); document.getElementById('dice2Result').innerHTML=win?`🎉 Выигрыш ${bet*8} AMD! (${r1}+${r2}=${sum})`:`😞 Проигрыш ${bet} AMD. (${r1}+${r2}=${sum})`; }
-    async function playBlackjack() {
-    const bet = parseFloat(prompt("Ваша ставка (AMD):"));
-    if (isNaN(bet) || bet <= 0) return alert("Неверная сумма");
-    if (bet > currentBalance) return alert("Недостаточно средств");
+    // ========== БЛЭКДЖЕК (полностью встроенный) ==========
+async function playBlackjack() {
+    const bet = parseFloat(document.getElementById('bjBet').value);
+    if (isNaN(bet) || bet <= 0) return showGameMessage('bjResult', "Введите ставку!", false);
+    if (bet > currentBalance) return showGameMessage('bjResult', "Недостаточно средств!", false);
 
     const suits = { 'H': '♥', 'D': '♦', 'C': '♣', 'S': '♠' };
     const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
@@ -279,18 +280,22 @@
     let pSum = sumHand(player);
     let dSum = sumHand(dealer);
 
-    let msg = `Ваши карты: ${player.map(c=>c.display).join(", ")} (очки: ${pSum})\nДилер: ${dealer[0].display} (скрыта)\n`;
+    function updateUI() {
+        document.getElementById('bjCards').innerHTML = `<strong>Ваши карты:</strong> ${player.map(c=>c.display).join(", ")} (очки: ${pSum})<br>
+        <strong>Дилер:</strong> ${dealer[0].display} (скрыта)`;
+    }
+    updateUI();
 
-    while(pSum < 21 && confirm(msg + "Ещё карту?")) {
+    while(pSum < 21 && confirm("Ещё карту?")) {
         player.push(getCard());
         pSum = sumHand(player);
-        msg = `Ваши карты: ${player.map(c=>c.display).join(", ")} (очки: ${pSum})\n`;
+        updateUI();
     }
 
     if(pSum > 21) {
-        alert(`Перебор! Вы проиграли ${bet} AMD.`);
         await addBalance(currentUser, -bet);
         await refreshBalance();
+        showGameMessage('bjResult', `Перебор! Вы проиграли ${bet} AMD.`, false);
         return;
     }
 
@@ -298,82 +303,128 @@
         dealer.push(getCard());
         dSum = sumHand(dealer);
     }
+    document.getElementById('bjCards').innerHTML = `<strong>Ваши карты:</strong> ${player.map(c=>c.display).join(", ")} (очки: ${pSum})<br>
+    <strong>Дилер:</strong> ${dealer.map(c=>c.display).join(", ")} (очки: ${dSum})`;
 
-    let result = "";
     if(dSum > 21 || pSum > dSum) {
         let win = bet * 2;
         await addBalance(currentUser, win);
-        result = `Вы выиграли ${win} AMD! (дилер: ${dealer.map(c=>c.display).join(", ")} = ${dSum})`;
+        showGameMessage('bjResult', `Вы выиграли ${win} AMD!`, true);
     } else if(pSum === dSum) {
         await addBalance(currentUser, bet);
-        result = `Ничья, ставка возвращена. (дилер: ${dealer.map(c=>c.display).join(", ")} = ${dSum})`;
+        showGameMessage('bjResult', `Ничья, ставка возвращена.`, true);
     } else {
         await addBalance(currentUser, -bet);
-        result = `Вы проиграли ${bet} AMD. (дилер: ${dealer.map(c=>c.display).join(", ")} = ${dSum})`;
+        showGameMessage('bjResult', `Вы проиграли ${bet} AMD.`, false);
     }
     await refreshBalance();
-    alert(result);
 }
-    async function playVideoPoker() {
-    const bet = parseFloat(prompt("Ставка (AMD):"));
-    if (isNaN(bet) || bet <= 0 || bet > currentBalance) return alert("Неверная сумма");
+
+// ========== ВИДЕОПОКЕР (встроенный) ==========
+async function playVideoPoker() {
+    const bet = parseFloat(document.getElementById('vpBet').value);
+    if (isNaN(bet) || bet <= 0) return showGameMessage('vpResult', "Введите ставку!", false);
+    if (bet > currentBalance) return showGameMessage('vpResult', "Недостаточно средств!", false);
+    
     const ranks = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
     const suits = ["♥","♦","♣","♠"];
     let deck = [];
     for(let r of ranks) for(let s of suits) deck.push(r+s);
     for(let i=deck.length-1;i>0;i--){ let j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
     let hand = deck.slice(0,5);
-    let handStr = hand.join(", ");
-    let choice = prompt(`Ваши карты: ${handStr}\nВведите номера карт для замены (1-5, через пробел), или 0 — оставить всё:`);
-    if(choice !== "0" && choice){
-        let indices = choice.split(" ").map(Number).filter(n=>n>=1&&n<=5);
-        for(let idx of indices) hand[idx-1] = deck[5 + idx];
+    
+    function updateHand() {
+        let html = '<div style="display:flex; gap:10px; flex-wrap:wrap; margin:10px 0;">';
+        hand.forEach((card,idx) => { html += `<div style="background:#1e1e2e; padding:8px 16px; border-radius:16px;">${card}<br><input type="checkbox" id="hold${idx}" value="${idx}"> Замена</div>`; });
+        html += '</div>';
+        document.getElementById('vpHand').innerHTML = html;
     }
-    let newHand = hand.join(", ");
-    let payout = 0;
-    if(newHand.match(/(\w+♥.*\1♥.*\1♥.*\1♥)/)) payout = bet * 50;
-    else if(newHand.match(/(\w+[♥♦♣♠].*\1.*\1.*\1)/)) payout = bet * 25;
-    else if(newHand.match(/(\w+[♥♦♣♠].*\1.*\1)/)) payout = bet * 5;
-    else payout = 0;
-    if(payout > 0) {
-        await addBalance(currentUser, payout);
-        alert(`Вы выиграли ${payout} AMD! (комбинация: ${newHand})`);
-    } else {
-        await addBalance(currentUser, -bet);
-        alert(`Проигрыш. Ваши карты: ${newHand}`);
-    }
-    await refreshBalance();
-}
-    async function playCraps() {
-    const bet = parseFloat(prompt("Ставка (AMD):"));
-    if (isNaN(bet) || bet <= 0 || bet > currentBalance) return alert("Неверная сумма");
-    let first = Math.floor(Math.random()*6)+1 + Math.floor(Math.random()*6)+1;
-    if(first === 7 || first === 11) {
-        await addBalance(currentUser, bet * 2);
-        alert(`🎲 Выбросили ${first} — ВЫИГРЫШ! +${bet*2} AMD`);
-    } else if(first === 2 || first === 3 || first === 12) {
-        await addBalance(currentUser, -bet);
-        alert(`🎲 Выбросили ${first} — ПРОИГРЫШ. -${bet} AMD`);
-    } else {
-        let point = first;
-        alert(`🎲 Точка: ${point}. Бросаем ещё...`);
-        let roll = 0;
-        while(roll !== 7 && roll !== point) {
-            roll = Math.floor(Math.random()*6)+1 + Math.floor(Math.random()*6)+1;
-            if(roll === point) {
-                await addBalance(currentUser, bet * 2);
-                alert(`🎲 Выпало ${roll} (точка) — ВЫИГРЫШ! +${bet*2} AMD`);
-                break;
-            } else if(roll === 7) {
-                await addBalance(currentUser, -bet);
-                alert(`🎲 Выпало 7 — ПРОИГРЫШ. -${bet} AMD`);
-                break;
-            } else {
-                alert(`🎲 Выпало ${roll}. Продолжаем...`);
+    updateHand();
+    
+    await new Promise(resolve => {
+        let btn = document.createElement('button');
+        btn.innerText = "Заменить выбранные";
+        btn.className = "action-btn";
+        btn.onclick = async () => {
+            let indices = [];
+            for(let i=0;i<5;i++) {
+                let cb = document.getElementById(`hold${i}`);
+                if(cb && cb.checked) indices.push(i);
             }
+            for(let idx of indices) hand[idx] = deck[5 + idx];
+            let newHand = hand.join(", ");
+            let payout = 0;
+            if(newHand.match(/(\w+♥.*\1♥.*\1♥.*\1♥)/)) payout = bet * 50;
+            else if(newHand.match(/(\w+[♥♦♣♠].*\1.*\1.*\1)/)) payout = bet * 25;
+            else if(newHand.match(/(\w+[♥♦♣♠].*\1.*\1)/)) payout = bet * 5;
+            else payout = 0;
+            if(payout > 0) {
+                await addBalance(currentUser, payout);
+                showGameMessage('vpResult', `Вы выиграли ${payout} AMD! (комбинация: ${newHand})`, true);
+            } else {
+                await addBalance(currentUser, -bet);
+                showGameMessage('vpResult', `Проигрыш. Ваши карты: ${newHand}`, false);
+            }
+            await refreshBalance();
+            btn.remove();
+            resolve();
+        };
+        document.getElementById('vpHand').appendChild(btn);
+    });
+}
+
+// ========== КРЭПС (настоящий, с кубиками) ==========
+let crapsPoint = null;
+async function rollCraps() {
+    const bet = parseFloat(document.getElementById('crapsBet').value);
+    if (isNaN(bet) || bet <= 0) return showGameMessage('crapsResult', "Введите ставку!", false);
+    if (bet > currentBalance) return showGameMessage('crapsResult', "Недостаточно средств!", false);
+    
+    let roll = Math.floor(Math.random()*6)+1 + Math.floor(Math.random()*6)+1;
+    document.getElementById('crapsDice').innerHTML = `🎲 ${roll} 🎲`;
+    
+    if(crapsPoint === null) {
+        // первый бросок
+        if(roll === 7 || roll === 11) {
+            await addBalance(currentUser, bet * 2);
+            showGameMessage('crapsResult', `🎲 Выбросили ${roll} — ВЫИГРЫШ! +${bet*2} AMD`, true);
+            await refreshBalance();
+            crapsPoint = null;
+        } else if(roll === 2 || roll === 3 || roll === 12) {
+            await addBalance(currentUser, -bet);
+            showGameMessage('crapsResult', `🎲 Выбросили ${roll} — ПРОИГРЫШ. -${bet} AMD`, false);
+            await refreshBalance();
+            crapsPoint = null;
+        } else {
+            crapsPoint = roll;
+            showGameMessage('crapsResult', `🎲 Точка: ${crapsPoint}. Бросайте снова!`, true);
+        }
+    } else {
+        // последующие броски
+        if(roll === crapsPoint) {
+            await addBalance(currentUser, bet * 2);
+            showGameMessage('crapsResult', `🎲 Выпало ${roll} (точка) — ВЫИГРЫШ! +${bet*2} AMD`, true);
+            await refreshBalance();
+            crapsPoint = null;
+        } else if(roll === 7) {
+            await addBalance(currentUser, -bet);
+            showGameMessage('crapsResult', `🎲 Выпало 7 — ПРОИГРЫШ. -${bet} AMD`, false);
+            await refreshBalance();
+            crapsPoint = null;
+        } else {
+            showGameMessage('crapsResult', `🎲 Выпало ${roll}. Ничья. Продолжайте бросать (точка ${crapsPoint})`, true);
         }
     }
-    await refreshBalance();
+}
+
+// Вспомогательная функция для отображения сообщений в игре
+function showGameMessage(elementId, message, isWin) {
+    const el = document.getElementById(elementId);
+    if(el) {
+        el.innerHTML = message;
+        el.style.color = isWin ? '#4caf50' : '#ff6666';
+        setTimeout(() => { if(el) el.innerHTML = ''; }, 3000);
+    }
 }
 
     // ========== ПОЛНОЭКРАННЫЙ РЕЖИМ ==========
