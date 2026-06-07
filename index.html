@@ -3,32 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BITAMD CASINO — ИГРОВОЙ ЦЕНТР</title>
+    <title>BITAMD CASINO — ПОЛНЫЙ ЭКРАН ИГР</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', 'Inter', system-ui;
+            font-family: 'Segoe UI', system-ui;
             background: radial-gradient(circle at 10% 20%, #0a0a0f, #050508);
-            color: #eee;
+            color: white;
             padding: 24px;
             min-height: 100vh;
         }
         .container { max-width: 1400px; margin: 0 auto; }
 
-        /* ВХОД / РЕГИСТРАЦИЯ */
+        /* ВХОД */
         .auth-card, .register-card {
-            background: rgba(20, 20, 35, 0.95);
+            background: rgba(20,20,35,0.95);
             backdrop-filter: blur(12px);
             border-radius: 40px;
             padding: 32px;
             width: 360px;
             margin: 80px auto;
-            border: 1px solid rgba(247,147,26,0.5);
-            box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+            border: 1px solid #f7931a;
         }
         .auth-card input, .register-card input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 12px;
             margin: 12px 0;
             border-radius: 60px;
             background: #1e1e2e;
@@ -43,7 +42,6 @@
             border-radius: 60px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.2s;
         }
         .switch-link { text-align: center; margin-top: 16px; font-size: 13px; color: #f7931a; cursor: pointer; }
         .spinner {
@@ -58,12 +56,13 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ОСНОВНАЯ ПАНЕЛЬ ПОСЛЕ ВХОДА */
+        /* ОСНОВНАЯ ПАНЕЛЬ */
         .dashboard {
-            background: rgba(10, 10, 18, 0.7);
+            background: rgba(10,10,18,0.7);
             border-radius: 48px;
             padding: 20px;
             backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
         }
         .top-bar {
             display: flex;
@@ -73,58 +72,18 @@
             padding: 12px 24px;
             border-radius: 60px;
             margin-bottom: 24px;
-            border: 1px solid #2a2a3a;
         }
-        .balance-box {
-            background: #f7931a;
-            padding: 6px 18px;
-            border-radius: 60px;
-            color: black;
-            font-weight: bold;
-        }
-        .cashier-buttons {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        .cashier-buttons button {
-            flex: 1;
-            background: #1e2a2a;
-            border: none;
-            padding: 12px;
-            border-radius: 60px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-            color: white;
-        }
-        .cashier-buttons button:hover { background: #2c7a4d; transform: scale(0.98); }
+        .balance-box { background: #f7931a; padding: 6px 18px; border-radius: 60px; color: black; font-weight: bold; }
+        .cashier-buttons { display: flex; gap: 16px; margin-bottom: 24px; }
+        .cashier-buttons button { flex: 1; background: #1e2a2a; border: none; padding: 12px; border-radius: 60px; cursor: pointer; }
+        .nav-tabs { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+        .nav-btn { background: #1a1a2a; border: none; padding: 10px 24px; border-radius: 40px; color: #ccc; cursor: pointer; }
+        .nav-btn.active { background: #f7931a; color: black; }
 
-        .nav-tabs {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 28px;
-            flex-wrap: wrap;
-        }
-        .nav-btn {
-            background: #1a1a2a;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 40px;
-            color: #ccc;
-            cursor: pointer;
-            font-weight: 500;
-            transition: 0.2s;
-        }
-        .nav-btn.active {
-            background: #f7931a;
-            color: black;
-            box-shadow: 0 0 10px rgba(247,147,26,0.5);
-        }
-
+        /* КАТАЛОГ */
         .games-catalog {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 24px;
             margin-top: 20px;
         }
@@ -134,26 +93,22 @@
             padding: 24px 12px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: 0.25s;
             border: 1px solid #2a2a3a;
         }
-        .game-card:hover {
-            transform: translateY(-6px);
-            background: #1e1e30;
-            border-color: #f7931a;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
-        }
+        .game-card:hover { transform: translateY(-6px); background: #1e1e30; border-color: #f7931a; }
         .game-emoji { font-size: 54px; margin-bottom: 12px; }
-        .game-title { font-weight: bold; font-size: 1rem; }
+        .game-title { font-weight: bold; font-size: 0.9rem; }
 
-        .game-window {
+        /* ОКНО ИГРЫ (ВЕСЬ ЭКРАН) */
+        .game-fullscreen {
             background: #0c0c14;
-            border-radius: 40px;
+            border-radius: 48px;
             padding: 28px;
             border: 1px solid #2a2a3a;
-            margin-top: 10px;
+            min-height: 60vh;
         }
-        .back-btn {
+        .game-fullscreen .back-btn {
             background: #252535;
             border: none;
             padding: 8px 24px;
@@ -162,301 +117,128 @@
             cursor: pointer;
             margin-bottom: 24px;
         }
-        .car-card {
-            background: #12121e;
-            border-radius: 28px;
-            padding: 20px;
-            margin: 15px 0;
-        }
+        .car-card { background: #12121e; border-radius: 28px; padding: 20px; margin: 15px 0; }
         .car-multiplier { font-size: 40px; color: #f7931a; margin: 10px 0; }
-        .car-bet-input, .bet-input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 60px;
-            background: #1e1e2e;
-            border: 1px solid #3a3a4e;
-            color: white;
-            margin: 10px 0;
-        }
-        .action-btn {
-            background: #f7931a;
-            border: none;
-            padding: 10px;
-            border-radius: 60px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 8px;
-        }
+        .bet-input { width: 100%; padding: 12px; border-radius: 60px; background: #1e1e2e; border: 1px solid #3a3a4e; color: white; margin: 10px 0; }
+        .action-btn { background: #f7931a; border: none; padding: 10px; border-radius: 60px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; }
         .race-btn { background: #2c7a4d; font-size: 1.2rem; padding: 12px; width: 100%; margin: 15px 0; }
         .broken { color: #ff6666; text-decoration: line-through; }
-        .account-stats {
-            background: #0f0f18;
-            border-radius: 32px;
-            padding: 28px;
-            text-align: center;
-        }
-        .admin-panel {
-            background: #0a0a12;
-            border-radius: 32px;
-            padding: 20px;
-            margin-top: 20px;
-            border: 1px solid #2a2a3a;
-        }
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            visibility: hidden;
-            opacity: 0;
-            transition: 0.2s;
-        }
-        .modal-overlay.active { visibility: visible; opacity: 1; }
-        .modal-window {
-            background: #1a1a2a;
-            border-radius: 40px;
-            padding: 28px;
-            width: 320px;
-            border: 1px solid #f7931a;
-        }
-        hr { border-color: #2a2a3a; margin: 20px 0; }
+        .account-stats { background: #0f0f18; border-radius: 32px; padding: 28px; text-align: center; }
+        .admin-panel { background: #0a0a12; border-radius: 32px; padding: 20px; margin-top: 20px; }
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:2000; visibility:hidden; opacity:0; transition:0.2s; }
+        .modal-overlay.active { visibility:visible; opacity:1; }
+        .modal-window { background:#1a1a2a; border-radius:40px; padding:28px; width:320px; border:1px solid #f7931a; }
+        hr { border-color:#2a2a3a; margin:20px 0; }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- ВХОД -->
-    <div id="authPanel">
-        <div class="auth-card">
-            <h3>🔐 ВХОД</h3>
-            <input type="text" id="loginUsername" placeholder="Логин">
-            <input type="password" id="loginPassword" placeholder="Пароль">
-            <div class="spinner" id="loginSpinner"></div>
-            <button id="doLoginBtn">Войти</button>
-            <div class="switch-link" id="showRegisterLink">Нет аккаунта? Зарегистрироваться</div>
-        </div>
-        <div id="authMessage" style="text-align:center; color:#f7931a;"></div>
-    </div>
-
-    <!-- РЕГИСТРАЦИЯ -->
-    <div id="registerPanel" style="display:none;">
-        <div class="register-card">
-            <h3>📝 РЕГИСТРАЦИЯ</h3>
-            <input type="text" id="regUsername" placeholder="Логин">
-            <input type="password" id="regPassword" placeholder="Пароль">
-            <div class="bankaroo-field">
-                <input type="text" id="regBankarooLink" placeholder="Ссылка Bankaroo (необязательно)">
-            </div>
-            <div class="terms-field">
-                <input type="checkbox" id="agreeTerms"> <label for="agreeTerms">Я принимаю условия</label>
-            </div>
-            <div class="spinner" id="registerSpinner"></div>
-            <button id="doRegisterBtn">Зарегистрироваться</button>
-            <div class="switch-link" id="showAuthLink">Уже есть аккаунт? Войти</div>
-        </div>
-        <div id="regMessage" style="text-align:center; color:#f7931a;"></div>
-    </div>
+    <!-- ВХОД И РЕГИСТРАЦИЯ (код стандартный) -->
+    <div id="authPanel"><div class="auth-card"><h3>🔐 ВХОД</h3><input type="text" id="loginUsername" placeholder="Логин"><input type="password" id="loginPassword" placeholder="Пароль"><div class="spinner" id="loginSpinner"></div><button id="doLoginBtn">Войти</button><div class="switch-link" id="showRegisterLink">Нет аккаунта? Зарегистрироваться</div></div><div id="authMessage" style="text-align:center; color:#f7931a;"></div></div>
+    <div id="registerPanel" style="display:none;"><div class="register-card"><h3>📝 РЕГИСТРАЦИЯ</h3><input type="text" id="regUsername" placeholder="Логин"><input type="password" id="regPassword" placeholder="Пароль"><div class="bankaroo-field"><input type="text" id="regBankarooLink" placeholder="Ссылка Bankaroo (необязательно)"></div><div class="terms-field"><input type="checkbox" id="agreeTerms"> <label for="agreeTerms">Я принимаю условия</label></div><div class="spinner" id="registerSpinner"></div><button id="doRegisterBtn">Зарегистрироваться</button><div class="switch-link" id="showAuthLink">Уже есть аккаунт? Войти</div></div><div id="regMessage" style="text-align:center; color:#f7931a;"></div></div>
 
     <!-- ОСНОВНАЯ ПАНЕЛЬ -->
     <div id="gamePanel" style="display:none;">
         <div class="dashboard">
-            <div class="top-bar">
-                <div>🎰 BITAMD CASINO</div>
-                <div class="balance-box">💰 <span id="globalBalance">0</span> AMD</div>
-            </div>
-            <div class="cashier-buttons">
-                <button id="depositBtn">💳 ЗАЯВКА НА ВВОД</button>
-                <button id="withdrawBtn">💸 ЗАЯВКА НА ВЫВОД (x2)</button>
-            </div>
-
+            <div class="top-bar"><div>🎰 BITAMD CASINO</div><div class="balance-box">💰 <span id="globalBalance">0</span> AMD</div></div>
+            <div class="cashier-buttons"><button id="depositBtn">💳 ЗАЯВКА НА ВВОД</button><button id="withdrawBtn">💸 ЗАЯВКА НА ВЫВОД (x2)</button></div>
             <div class="nav-tabs">
                 <button class="nav-btn active" data-tab="games">🎮 ИГРЫ</button>
                 <button class="nav-btn" data-tab="account">👤 АККАУНТ</button>
                 <button class="nav-btn" id="adminTabBtn" style="display:none;" data-tab="admin">🔧 АДМИН</button>
             </div>
 
-            <div id="gamesTab" class="tab-content">
-                <div class="games-catalog" id="gamesCatalog"></div>
-            </div>
+            <div id="gamesTab" class="tab-content"><div class="games-catalog" id="gamesCatalog"></div></div>
+            <div id="accountTab" class="tab-content" style="display:none;"><div class="account-stats"><h3>👤 ПРОФИЛЬ</h3><p>Логин: <strong id="accLogin">-</strong></p><p>Баланс: <strong id="accBalance">0</strong> AMD</p><button id="logoutBtn" class="action-btn" style="background:#555;">🚪 Выйти</button></div></div>
+            <div id="adminTab" class="tab-content" style="display:none;"><div class="admin-panel"><h4>🔧 УПРАВЛЕНИЕ</h4><input type="text" id="adminTargetUser" placeholder="Логин игрока" style="width:100%; padding:10px; margin:8px 0; border-radius:60px;"><input type="number" id="adminNewBalance" placeholder="Сумма" style="width:100%; padding:10px; margin:8px 0; border-radius:60px;"><button id="adminAddBalance" class="action-btn" style="background:#2c7a4d;">➕ Добавить баланс</button><button id="adminSetBalance" class="action-btn" style="background:#f7931a; margin-top:8px;">🎯 Установить баланс</button></div></div>
 
-            <div id="accountTab" class="tab-content" style="display:none;">
-                <div class="account-stats">
-                    <h3>👤 ПРОФИЛЬ</h3>
-                    <p>Логин: <strong id="accLogin">-</strong></p>
-                    <p>Баланс: <strong id="accBalance">0</strong> AMD</p>
-                    <button id="logoutBtn" class="action-btn" style="background:#555;">🚪 Выйти</button>
-                </div>
-            </div>
-
-            <div id="adminTab" class="tab-content" style="display:none;">
-                <div class="admin-panel">
-                    <h4>🔧 УПРАВЛЕНИЕ ИГРОКАМИ</h4>
-                    <input type="text" id="adminTargetUser" placeholder="Логин игрока" style="width:100%; padding:10px; margin:8px 0; border-radius:60px;">
-                    <input type="number" id="adminNewBalance" placeholder="Сумма" style="width:100%; padding:10px; margin:8px 0; border-radius:60px;">
-                    <button id="adminAddBalance" class="action-btn" style="background:#2c7a4d;">➕ Добавить баланс</button>
-                    <button id="adminSetBalance" class="action-btn" style="background:#f7931a; margin-top:8px;">🎯 Установить баланс</button>
-                </div>
-            </div>
-
-            <!-- ОКНА ИГР -->
-            <div id="carRaceWindow" class="game-window" style="display:none;">
-                <button class="back-btn close-game-btn">← К ИГРАМ</button>
-                <h2>🚗 CAR RACE</h2>
-                <div id="carsGrid"></div>
-                <button id="startRaceBtn" class="race-btn">🚦 НАЧАТЬ ГОНКУ</button>
-            </div>
-            <div id="coinWindow" class="game-window" style="display:none;">
-                <button class="back-btn close-game-btn">← К ИГРАМ</button>
-                <h2>🪙 ОРЁЛ / РЕШКА</h2>
-                <input type="number" id="coinBet" class="bet-input" placeholder="Ставка" value="10">
-                <div style="display:flex; gap:10px;">
-                    <button id="coinHeads" class="action-btn">ОРЁЛ</button>
-                    <button id="coinTails" class="action-btn">РЕШКА</button>
-                </div>
-                <div id="coinResult" style="margin-top:15px;"></div>
-            </div>
-            <div id="diceWindow" class="game-window" style="display:none;">
-                <button class="back-btn close-game-btn">← К ИГРАМ</button>
-                <h2>🎲 КУБИК (x5)</h2>
-                <input type="number" id="diceBet" class="bet-input" placeholder="Ставка" value="10">
-                <input type="number" id="diceGuess" class="bet-input" min="1" max="6" placeholder="Число 1-6">
-                <button id="diceBtn" class="action-btn">КРУТИТЬ</button>
-                <div id="diceResult"></div>
-            </div>
-            <div id="rouletteWindow" class="game-window" style="display:none;">
-                <button class="back-btn close-game-btn">← К ИГРАМ</button>
-                <h2>🎡 РУЛЕТКА (x10)</h2>
-                <input type="number" id="rouletteBet" class="bet-input" placeholder="Ставка" value="10">
-                <input type="number" id="rouletteGuess" class="bet-input" min="1" max="10" placeholder="Число 1-10">
-                <button id="rouletteBtn" class="action-btn">КРУТИТЬ</button>
-                <div id="rouletteResult"></div>
-            </div>
-            <div id="slotsWindow" class="game-window" style="display:none;">
-                <button class="back-btn close-game-btn">← К ИГРАМ</button>
-                <h2>🎰 СЛОТЫ (x7)</h2>
-                <input type="number" id="slotsBet" class="bet-input" placeholder="Ставка" value="10">
-                <button id="slotsBtn" class="action-btn">КРУТИТЬ</button>
-                <div id="slotsDisplay" style="font-size:28px; text-align:center; margin:15px 0;">🍒 🍒 🍒</div>
-                <div id="slotsResult"></div>
-            </div>
-            <div id="dice2Window" class="game-window" style="display:none;">
-                <button class="back-btn close-game-btn">← К ИГРАМ</button>
-                <h2>🎲 КОСТИ (2d6) x8</h2>
-                <input type="number" id="dice2Bet" class="bet-input" placeholder="Ставка" value="10">
-                <input type="number" id="dice2Guess" class="bet-input" min="2" max="12" placeholder="Сумма 2-12">
-                <button id="dice2Btn" class="action-btn">КРУТИТЬ</button>
-                <div id="dice2Result"></div>
-            </div>
+            <!-- ИГРЫ (полноэкранные) -->
+            <div id="gameFullscreen" style="display:none;"></div>
         </div>
     </div>
 </div>
 
-<div id="betModal" class="modal-overlay">
-    <div class="modal-window">
-        <h3>💸 СТАВКА НА МАШИНУ</h3>
-        <input type="number" id="modalBetAmount" placeholder="Сумма" value="10">
-        <div class="modal-buttons">
-            <button id="confirmBetBtn">ПОДТВЕРДИТЬ</button>
-            <button id="cancelBetBtn">ОТМЕНА</button>
-        </div>
-    </div>
-</div>
+<div id="betModal" class="modal-overlay"><div class="modal-window"><h3>💸 СТАВКА НА МАШИНУ</h3><input type="number" id="modalBetAmount" placeholder="Сумма" value="10"><div class="modal-buttons"><button id="confirmBetBtn">ПОДТВЕРДИТЬ</button><button id="cancelBetBtn">ОТМЕНА</button></div></div></div>
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwiUysaY7wBDETHQEu1chLG_-20wbwGoJ4TyBaVTU1bhkH-VVhKequ-jWnIphZ1wRkb/exec";
     let currentUser = null, isAdmin = false, currentBalance = 0;
-    let cars = [
-        { id: 0, name: "🚗 RED BULL", multiplier: 1.0, activeBet: null, broken: false, interval: null },
-        { id: 1, name: "🏎️ FERRARI", multiplier: 1.0, activeBet: null, broken: false, interval: null }
-    ];
+    let cars = [{ id:0, name:"🚗 RED BULL", multiplier:1.0, activeBet:null, broken:false, interval:null }, { id:1, name:"🏎️ FERRARI", multiplier:1.0, activeBet:null, broken:false, interval:null }];
     let pendingCarId = null;
 
-    async function loadUsers() { try { const res = await fetch(SCRIPT_URL + "?action=getUsers"); const data = await res.json(); return data.success ? data.users : {}; } catch(e) { return {}; } }
-    async function addBalance(login, amount) { await fetch(`${SCRIPT_URL}?action=addBalance&login=${encodeURIComponent(login)}&amount=${amount}`); }
-    async function setBalance(login, amount) { await fetch(`${SCRIPT_URL}?action=setBalance&login=${encodeURIComponent(login)}&balance=${amount}`); }
-    async function createUser(login, password, bankarooCode) { await fetch(`${SCRIPT_URL}?action=createUser&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}&balance=0&isAdmin=false&bankarooCode=${encodeURIComponent(bankarooCode)}`); }
-    async function refreshBalance() { if (!currentUser) return; const users = await loadUsers(); if (users[currentUser]) { currentBalance = users[currentUser].balance; document.getElementById('globalBalance').innerText = currentBalance.toFixed(2); document.getElementById('accBalance').innerText = currentBalance.toFixed(2); } }
+    async function loadUsers() { try { const r=await fetch(SCRIPT_URL+"?action=getUsers"); const d=await r.json(); return d.success?d.users:{}; } catch(e){return {};} }
+    async function addBalance(l,a){ await fetch(`${SCRIPT_URL}?action=addBalance&login=${encodeURIComponent(l)}&amount=${a}`); }
+    async function setBalance(l,a){ await fetch(`${SCRIPT_URL}?action=setBalance&login=${encodeURIComponent(l)}&balance=${a}`); }
+    async function createUser(l,p,bc){ await fetch(`${SCRIPT_URL}?action=createUser&login=${encodeURIComponent(l)}&password=${encodeURIComponent(p)}&balance=0&isAdmin=false&bankarooCode=${encodeURIComponent(bc)}`); }
+    async function refreshBalance() { if(!currentUser)return; const u=await loadUsers(); if(u[currentUser]){ currentBalance=u[currentUser].balance; document.getElementById('globalBalance').innerText=currentBalance.toFixed(2); document.getElementById('accBalance').innerText=currentBalance.toFixed(2); } }
 
-    function requestDeposit() { const amount = prompt("Сумма ввода (AMD):"); if (amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0) { fetch(`${SCRIPT_URL}?action=depositRequest&login=${encodeURIComponent(currentUser)}&amount=${amount}`); alert(`✅ Заявка на ввод ${amount} AMD отправлена админу.`); } else alert("❌ Неверная сумма"); }
-    async function requestWithdraw() { const users = await loadUsers(); const user = users[currentUser]; if (!user) return; const required = user.deposited * 2; if (currentBalance >= required) { if (confirm(`Вывести ${currentBalance} AMD?`)) { await fetch(`${SCRIPT_URL}?action=withdrawRequest&login=${encodeURIComponent(currentUser)}&amount=${currentBalance}`); alert("✅ Заявка на вывод отправлена админу."); } } else { alert(`❌ Нужно минимум ${required} AMD. У вас ${currentBalance}.`); } }
+    function requestDeposit(){ const amt=prompt("Сумма ввода:"); if(amt&&!isNaN(parseFloat(amt))&&parseFloat(amt)>0){ fetch(`${SCRIPT_URL}?action=depositRequest&login=${encodeURIComponent(currentUser)}&amount=${amt}`); alert("✅ Заявка отправлена админу."); } else alert("❌ Неверная сумма"); }
+    async function requestWithdraw(){ const u=await loadUsers(); const user=u[currentUser]; if(!user)return; const req=user.deposited*2; if(currentBalance>=req){ if(confirm(`Вывести ${currentBalance} AMD?`)){ await fetch(`${SCRIPT_URL}?action=withdrawRequest&login=${encodeURIComponent(currentUser)}&amount=${currentBalance}`); alert("✅ Заявка отправлена."); } } else alert(`❌ Нужно минимум ${req} AMD`); }
 
-    async function loginUser(login, password) {
-        const btn = document.getElementById('doLoginBtn'), spinner = document.getElementById('loginSpinner');
-        btn.disabled = true; spinner.style.display = 'block'; document.getElementById('authMessage').innerHTML = '⏳ Проверка...';
-        const users = await loadUsers(); const user = users[login];
-        btn.disabled = false; spinner.style.display = 'none';
-        if (user && user.password === password) {
-            currentUser = login; isAdmin = user.isAdmin === true;
-            document.getElementById('authPanel').style.display = 'none'; document.getElementById('registerPanel').style.display = 'none'; document.getElementById('gamePanel').style.display = 'block';
-            document.getElementById('accLogin').innerText = currentUser;
-            await refreshBalance();
-            if (isAdmin) { document.getElementById('adminTabBtn').style.display = 'inline-block'; }
-            return true;
-        } else { document.getElementById('authMessage').innerHTML = '❌ Неверный логин или пароль'; return false; }
+    async function loginUser(login,password){ const btn=document.getElementById('doLoginBtn'),spin=document.getElementById('loginSpinner'); btn.disabled=true; spin.style.display='block'; document.getElementById('authMessage').innerHTML='⏳ Проверка...'; const users=await loadUsers(); const user=users[login]; btn.disabled=false; spin.style.display='none'; if(user&&user.password===password){ currentUser=login; isAdmin=user.isAdmin===true; document.getElementById('authPanel').style.display='none'; document.getElementById('registerPanel').style.display='none'; document.getElementById('gamePanel').style.display='block'; document.getElementById('accLogin').innerText=currentUser; await refreshBalance(); if(isAdmin) document.getElementById('adminTabBtn').style.display='inline-block'; return true; } else { document.getElementById('authMessage').innerHTML='❌ Неверный логин или пароль'; return false; } }
+    async function registerUser(login,password,link){ const btn=document.getElementById('doRegisterBtn'),spin=document.getElementById('registerSpinner'); btn.disabled=true; spin.style.display='block'; document.getElementById('regMessage').innerHTML='⏳ Регистрация...'; const users=await loadUsers(); if(users[login]){ document.getElementById('regMessage').innerHTML='❌ Логин существует'; btn.disabled=false; spin.style.display='none'; return false; } if(!document.getElementById('agreeTerms').checked){ document.getElementById('regMessage').innerHTML='❌ Примите условия'; btn.disabled=false; spin.style.display='none'; return false; } await createUser(login,password,link||''); document.getElementById('regMessage').innerHTML='✅ Регистрация успешна!'; btn.disabled=false; spin.style.display='none'; setTimeout(()=>{ document.getElementById('registerPanel').style.display='none'; document.getElementById('authPanel').style.display='block'; },1500); return true; }
+
+    document.getElementById('adminAddBalance')?.addEventListener('click',async()=>{ const t=document.getElementById('adminTargetUser').value.trim(), a=parseFloat(document.getElementById('adminNewBalance').value); if(!t||isNaN(a))return alert('Введите логин и сумму'); await addBalance(t,a); alert(`✅ Добавлено ${a} AMD для ${t}`); if(t===currentUser)await refreshBalance(); });
+    document.getElementById('adminSetBalance')?.addEventListener('click',async()=>{ const t=document.getElementById('adminTargetUser').value.trim(), b=parseFloat(document.getElementById('adminNewBalance').value); if(!t||isNaN(b))return alert('Введите логин и баланс'); await setBalance(t,b); alert(`✅ Баланс ${t} = ${b} AMD`); if(t===currentUser)await refreshBalance(); });
+    document.getElementById('logoutBtn')?.addEventListener('click',()=>{ currentUser=null; document.getElementById('gamePanel').style.display='none'; document.getElementById('authPanel').style.display='block'; });
+    document.getElementById('depositBtn')?.addEventListener('click',requestDeposit); document.getElementById('withdrawBtn')?.addEventListener('click',requestWithdraw);
+
+    function openBetModal(carId){ pendingCarId=carId; document.getElementById('betModal').classList.add('active'); }
+    document.getElementById('confirmBetBtn').onclick=async()=>{ const amt=parseFloat(document.getElementById('modalBetAmount').value); if(isNaN(amt)||amt<=0)return alert("Неверная сумма"); if(amt>currentBalance)return alert("Недостаточно средств"); const car=cars[pendingCarId]; if(car.activeBet!==null){ alert("Ставка уже есть"); return; } await addBalance(currentUser,-amt); await refreshBalance(); car.activeBet=amt; renderCars(); document.getElementById('betModal').classList.remove('active'); };
+    document.getElementById('cancelBetBtn').onclick=()=>{ document.getElementById('betModal').classList.remove('active'); pendingCarId=null; };
+    function cashoutCar(carId){ const car=cars[carId]; if(car.activeBet&&!car.broken){ const win=car.activeBet*car.multiplier; addBalance(currentUser,win); refreshBalance(); car.activeBet=null; renderCars(); alert(`💰 Выигрыш ${win.toFixed(2)} AMD`); } else alert("Нет активной ставки"); }
+    function startRace(){ let any=false; cars.forEach(c=>{ if(c.activeBet!==null&&c.activeBet>0) any=true; if(c.interval)clearInterval(c.interval); c.broken=false; }); if(!any){ alert("Сделайте ставку хотя бы на одну машину"); return; } cars.forEach(c=>{ if(c.activeBet===null||c.activeBet===0)return; c.interval=setInterval(()=>{ if(!c.broken&&c.activeBet){ c.multiplier=Math.min(10,c.multiplier+(Math.random()*0.3+0.1)); renderCars(); if(Math.random()<0.02){ c.broken=true; c.activeBet=null; clearInterval(c.interval); renderCars(); } } else if(!c.activeBet) clearInterval(c.interval); },700); }); renderCars(); }
+    function renderCars(){ const g=document.getElementById('carsGrid'); if(!g)return; g.innerHTML=''; cars.forEach(c=>{ const card=document.createElement('div'); card.className='car-card'; card.innerHTML=`<div>${c.name}</div><div class="car-multiplier">x ${c.multiplier.toFixed(2)}</div>${c.activeBet?`<div>💰 Ставка: ${c.activeBet} AMD</div>`:'<div>Нет ставки</div>'}${c.broken?'<div class="broken">💥 СЛОМАНА</div>':''}<input type="number" id="betCar-${c.id}" class="bet-input" placeholder="Сумма" value="10"><button class="action-btn" onclick="openBetModal(${c.id})">💵 ПОСТАВИТЬ</button>${c.activeBet&&!c.broken?`<button class="action-btn" style="background:#2c7a4d;" onclick="cashoutCar(${c.id})">💎 ЗАБРАТЬ</button>`:''}`; g.appendChild(card); }); }
+
+    // --- ИГРЫ ---
+    async function playCoin(choice){ const bet=parseFloat(document.getElementById('coinBet').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); const res=Math.random()<0.5?'Орёл':'Решка'; const win=(choice==='heads'&&res==='Орёл')||(choice==='tails'&&res==='Решка'); await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*2); await refreshBalance(); document.getElementById('coinResult').innerHTML=win?`🎉 Выигрыш ${bet*2} AMD! (${res})`:`😞 Проигрыш ${bet} AMD. (${res})`; }
+    async function playDice(){ const bet=parseFloat(document.getElementById('diceBet').value); const g=parseInt(document.getElementById('diceGuess').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); if(isNaN(g)||g<1||g>6)return alert("1-6"); const roll=Math.floor(Math.random()*6)+1; const win=roll===g; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*5); await refreshBalance(); document.getElementById('diceResult').innerHTML=win?`🎉 Выигрыш ${bet*5} AMD! (${roll})`:`😞 Проигрыш ${bet} AMD. (${roll})`; }
+    async function playRoulette(){ const bet=parseFloat(document.getElementById('rouletteBet').value); const g=parseInt(document.getElementById('rouletteGuess').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); if(isNaN(g)||g<1||g>10)return alert("1-10"); const roll=Math.floor(Math.random()*10)+1; const win=roll===g; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*10); await refreshBalance(); document.getElementById('rouletteResult').innerHTML=win?`🎉 Выигрыш ${bet*10} AMD! (${roll})`:`😞 Проигрыш ${bet} AMD. (${roll})`; }
+    async function playSlots(){ const bet=parseFloat(document.getElementById('slotsBet').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); const sym=['🍒','🍋','🍊','🍉','⭐','💎','7️⃣']; const a=sym[Math.floor(Math.random()*sym.length)]; const b=sym[Math.floor(Math.random()*sym.length)]; const c=sym[Math.floor(Math.random()*sym.length)]; document.getElementById('slotsDisplay').innerHTML=`${a} ${b} ${c}`; const win=a===b&&b===c; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*7); await refreshBalance(); document.getElementById('slotsResult').innerHTML=win?`🎉 Выигрыш ${bet*7} AMD!`:`😞 Проигрыш ${bet} AMD.`; }
+    async function playDice2(){ const bet=parseFloat(document.getElementById('dice2Bet').value); const g=parseInt(document.getElementById('dice2Guess').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); if(isNaN(g)||g<2||g>12)return alert("2-12"); const r1=Math.floor(Math.random()*6)+1; const r2=Math.floor(Math.random()*6)+1; const sum=r1+r2; const win=sum===g; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*8); await refreshBalance(); document.getElementById('dice2Result').innerHTML=win?`🎉 Выигрыш ${bet*8} AMD! (${r1}+${r2}=${sum})`:`😞 Проигрыш ${bet} AMD. (${r1}+${r2}=${sum})`; }
+    async function playBlackjack(){ alert("Блэкджек в разработке"); }
+    async function playVideoPoker(){ alert("Видеопокер в разработке"); }
+    async function playCraps(){ alert("Крэпс в разработке"); }
+
+    function showGame(gameId){ 
+        const fullDiv=document.getElementById('gameFullscreen'); 
+        const mainDash=document.querySelector('.dashboard'); 
+        mainDash.style.display='none'; 
+        fullDiv.style.display='block'; 
+        let html='<div class="game-fullscreen"><button class="back-btn" onclick="closeGame()">← К ИГРАМ</button>';
+        if(gameId==='car'){ html+=`<h2>🚗 CAR RACE</h2><div id="carsGrid"></div><button id="startRaceBtn" class="race-btn">🚦 НАЧАТЬ ГОНКУ</button>`; fullDiv.innerHTML=html; renderCars(); document.getElementById('startRaceBtn').onclick=startRace; }
+        else if(gameId==='coin'){ html+=`<h2>🪙 ОРЁЛ / РЕШКА</h2><input type="number" id="coinBet" class="bet-input" placeholder="Ставка" value="10"><div style="display:flex; gap:10px;"><button id="coinHeads" class="action-btn">ОРЁЛ</button><button id="coinTails" class="action-btn">РЕШКА</button></div><div id="coinResult"></div>`; fullDiv.innerHTML=html; document.getElementById('coinHeads').onclick=()=>playCoin('heads'); document.getElementById('coinTails').onclick=()=>playCoin('tails'); }
+        else if(gameId==='dice'){ html+=`<h2>🎲 КУБИК (x5)</h2><input type="number" id="diceBet" class="bet-input" placeholder="Ставка" value="10"><input type="number" id="diceGuess" class="bet-input" placeholder="1-6"><button id="diceBtn" class="action-btn">КРУТИТЬ</button><div id="diceResult"></div>`; fullDiv.innerHTML=html; document.getElementById('diceBtn').onclick=playDice; }
+        else if(gameId==='roulette'){ html+=`<h2>🎡 РУЛЕТКА (x10)</h2><input type="number" id="rouletteBet" class="bet-input" placeholder="Ставка" value="10"><input type="number" id="rouletteGuess" class="bet-input" placeholder="1-10"><button id="rouletteBtn" class="action-btn">КРУТИТЬ</button><div id="rouletteResult"></div>`; fullDiv.innerHTML=html; document.getElementById('rouletteBtn').onclick=playRoulette; }
+        else if(gameId==='slots'){ html+=`<h2>🎰 СЛОТЫ (x7)</h2><input type="number" id="slotsBet" class="bet-input" placeholder="Ставка" value="10"><button id="slotsBtn" class="action-btn">КРУТИТЬ</button><div id="slotsDisplay" style="font-size:32px; text-align:center; margin:15px 0;">🍒 🍒 🍒</div><div id="slotsResult"></div>`; fullDiv.innerHTML=html; document.getElementById('slotsBtn').onclick=playSlots; }
+        else if(gameId==='dice2'){ html+=`<h2>🎲 КОСТИ 2d6 (x8)</h2><input type="number" id="dice2Bet" class="bet-input" placeholder="Ставка" value="10"><input type="number" id="dice2Guess" class="bet-input" placeholder="2-12"><button id="dice2Btn" class="action-btn">КРУТИТЬ</button><div id="dice2Result"></div>`; fullDiv.innerHTML=html; document.getElementById('dice2Btn').onclick=playDice2; }
+        else if(gameId==='blackjack'){ fullDiv.innerHTML=html+`<h2>🃏 БЛЭКДЖЕК</h2><button class="action-btn" onclick="playBlackjack()">В разработке</button>`; }
+        else if(gameId==='videopoker'){ fullDiv.innerHTML=html+`<h2>🎰 ВИДЕОПОКЕР</h2><button class="action-btn" onclick="playVideoPoker()">В разработке</button>`; }
+        else if(gameId==='craps'){ fullDiv.innerHTML=html+`<h2>🎲 КРЭПС</h2><button class="action-btn" onclick="playCraps()">В разработке</button>`; }
     }
-    async function registerUser(login, password, bankarooLink) {
-        const btn = document.getElementById('doRegisterBtn'), spinner = document.getElementById('registerSpinner');
-        btn.disabled = true; spinner.style.display = 'block'; document.getElementById('regMessage').innerHTML = '⏳ Регистрация...';
-        const users = await loadUsers();
-        if (users[login]) { document.getElementById('regMessage').innerHTML = '❌ Логин существует'; btn.disabled = false; spinner.style.display = 'none'; return false; }
-        if (!document.getElementById('agreeTerms').checked) { document.getElementById('regMessage').innerHTML = '❌ Примите условия'; btn.disabled = false; spinner.style.display = 'none'; return false; }
-        await createUser(login, password, bankarooLink || '');
-        document.getElementById('regMessage').innerHTML = '✅ Регистрация успешна!'; btn.disabled = false; spinner.style.display = 'none';
-        setTimeout(() => { document.getElementById('registerPanel').style.display = 'none'; document.getElementById('authPanel').style.display = 'block'; }, 1500);
-        return true;
-    }
-
-    document.getElementById('adminAddBalance')?.addEventListener('click', async () => { const target = document.getElementById('adminTargetUser').value.trim(), amount = parseFloat(document.getElementById('adminNewBalance').value); if (!target || isNaN(amount)) return alert('Введите логин и сумму'); await addBalance(target, amount); alert(`✅ Добавлено ${amount} AMD для ${target}`); if (target === currentUser) await refreshBalance(); });
-    document.getElementById('adminSetBalance')?.addEventListener('click', async () => { const target = document.getElementById('adminTargetUser').value.trim(), bal = parseFloat(document.getElementById('adminNewBalance').value); if (!target || isNaN(bal)) return alert('Введите логин и баланс'); await setBalance(target, bal); alert(`✅ Баланс ${target} установлен на ${bal} AMD`); if (target === currentUser) await refreshBalance(); });
-    document.getElementById('logoutBtn')?.addEventListener('click', () => { currentUser = null; document.getElementById('gamePanel').style.display = 'none'; document.getElementById('authPanel').style.display = 'block'; });
-    document.getElementById('depositBtn')?.addEventListener('click', requestDeposit); document.getElementById('withdrawBtn')?.addEventListener('click', requestWithdraw);
-
-    function openBetModal(carId) { pendingCarId = carId; document.getElementById('betModal').classList.add('active'); }
-    document.getElementById('confirmBetBtn').onclick = async () => { const amount = parseFloat(document.getElementById('modalBetAmount').value); if (isNaN(amount) || amount <= 0) return alert("Неверная сумма"); if (amount > currentBalance) return alert("Недостаточно средств"); const car = cars[pendingCarId]; if (car.activeBet !== null) { alert("Ставка уже есть"); return; } await addBalance(currentUser, -amount); await refreshBalance(); car.activeBet = amount; renderCars(); document.getElementById('betModal').classList.remove('active'); };
-    document.getElementById('cancelBetBtn').onclick = () => { document.getElementById('betModal').classList.remove('active'); pendingCarId = null; };
-    function cashoutCar(carId) { const car = cars[carId]; if (car.activeBet && !car.broken) { const win = car.activeBet * car.multiplier; addBalance(currentUser, win); refreshBalance(); car.activeBet = null; renderCars(); alert(`💰 Выигрыш ${win.toFixed(2)} AMD`); } else alert("Нет активной ставки"); }
-    function startRace() { let anyBet = false; cars.forEach(car => { if (car.activeBet !== null && car.activeBet > 0) anyBet = true; if (car.interval) clearInterval(car.interval); car.broken = false; }); if (!anyBet) { alert("Сделайте ставку хотя бы на одну машину"); return; } cars.forEach(car => { if (car.activeBet === null || car.activeBet === 0) return; car.interval = setInterval(() => { if (!car.broken && car.activeBet) { car.multiplier = Math.min(10, car.multiplier + (Math.random() * 0.3 + 0.1)); renderCars(); if (Math.random() < 0.02) { car.broken = true; car.activeBet = null; clearInterval(car.interval); renderCars(); } } else if (!car.activeBet) clearInterval(car.interval); }, 700); }); renderCars(); }
-    function renderCars() { const grid = document.getElementById('carsGrid'); if (!grid) return; grid.innerHTML = ''; cars.forEach(car => { const card = document.createElement('div'); card.className = 'car-card'; card.innerHTML = `<div>${car.name}</div><div class="car-multiplier">x ${car.multiplier.toFixed(2)}</div>${car.activeBet ? `<div>💰 Ставка: ${car.activeBet} AMD</div>` : '<div>Нет ставки</div>'}${car.broken ? '<div class="broken">💥 СЛОМАНА</div>' : ''}<input type="number" id="betCar-${car.id}" class="car-bet-input" placeholder="Сумма" value="10"><button class="action-btn" onclick="openBetModal(${car.id})">💵 ПОСТАВИТЬ</button>${car.activeBet && !car.broken ? `<button class="action-btn" style="background:#2c7a4d;" onclick="cashoutCar(${car.id})">💎 ЗАБРАТЬ</button>` : ''}`; grid.appendChild(card); }); }
-
-    async function playCoin(choice) { const bet = parseFloat(document.getElementById('coinBet').value); if (isNaN(bet) || bet <= 0) return alert("Введите ставку"); if (bet > currentBalance) return alert("Недостаточно средств"); const res = Math.random() < 0.5 ? 'Орёл' : 'Решка'; const isWin = (choice === 'heads' && res === 'Орёл') || (choice === 'tails' && res === 'Решка'); await addBalance(currentUser, -bet); if (isWin) await addBalance(currentUser, bet * 2); await refreshBalance(); document.getElementById('coinResult').innerHTML = isWin ? `🎉 Выигрыш ${bet * 2} AMD! (${res})` : `😞 Проигрыш ${bet} AMD. (${res})`; }
-    async function playDice() { const bet = parseFloat(document.getElementById('diceBet').value); const guess = parseInt(document.getElementById('diceGuess').value); if (isNaN(bet) || bet <= 0) return alert("Введите ставку"); if (bet > currentBalance) return alert("Недостаточно средств"); if (isNaN(guess) || guess < 1 || guess > 6) return alert("Число 1-6"); const roll = Math.floor(Math.random() * 6) + 1; const isWin = roll === guess; await addBalance(currentUser, -bet); if (isWin) await addBalance(currentUser, bet * 5); await refreshBalance(); document.getElementById('diceResult').innerHTML = isWin ? `🎉 Выигрыш ${bet * 5} AMD! (${roll})` : `😞 Проигрыш ${bet} AMD. (${roll})`; }
-    async function playRoulette() { const bet = parseFloat(document.getElementById('rouletteBet').value); const guess = parseInt(document.getElementById('rouletteGuess').value); if (isNaN(bet) || bet <= 0) return alert("Введите ставку"); if (bet > currentBalance) return alert("Недостаточно средств"); if (isNaN(guess) || guess < 1 || guess > 10) return alert("Число 1-10"); const roll = Math.floor(Math.random() * 10) + 1; const isWin = roll === guess; await addBalance(currentUser, -bet); if (isWin) await addBalance(currentUser, bet * 10); await refreshBalance(); document.getElementById('rouletteResult').innerHTML = isWin ? `🎉 Выигрыш ${bet * 10} AMD! (${roll})` : `😞 Проигрыш ${bet} AMD. (${roll})`; }
-    async function playSlots() { const bet = parseFloat(document.getElementById('slotsBet').value); if (isNaN(bet) || bet <= 0) return alert("Введите ставку"); if (bet > currentBalance) return alert("Недостаточно средств"); const symbols = ['🍒','🍋','🍊','🍉','⭐','💎','7️⃣']; const a = symbols[Math.floor(Math.random()*symbols.length)]; const b = symbols[Math.floor(Math.random()*symbols.length)]; const c = symbols[Math.floor(Math.random()*symbols.length)]; document.getElementById('slotsDisplay').innerHTML = `${a} ${b} ${c}`; const isWin = a === b && b === c; await addBalance(currentUser, -bet); if (isWin) await addBalance(currentUser, bet * 7); await refreshBalance(); document.getElementById('slotsResult').innerHTML = isWin ? `🎉 Выигрыш ${bet * 7} AMD!` : `😞 Проигрыш ${bet} AMD.`; }
-    async function playDice2() { const bet = parseFloat(document.getElementById('dice2Bet').value); const guess = parseInt(document.getElementById('dice2Guess').value); if (isNaN(bet) || bet <= 0) return alert("Введите ставку"); if (bet > currentBalance) return alert("Недостаточно средств"); if (isNaN(guess) || guess < 2 || guess > 12) return alert("Сумма 2-12"); const r1 = Math.floor(Math.random() * 6) + 1; const r2 = Math.floor(Math.random() * 6) + 1; const sum = r1 + r2; const isWin = sum === guess; await addBalance(currentUser, -bet); if (isWin) await addBalance(currentUser, bet * 8); await refreshBalance(); document.getElementById('dice2Result').innerHTML = isWin ? `🎉 Выигрыш ${bet * 8} AMD! (${r1}+${r2}=${sum})` : `😞 Проигрыш ${bet} AMD. (${r1}+${r2}=${sum})`; }
-
-    document.getElementById('coinHeads').onclick = () => playCoin('heads'); document.getElementById('coinTails').onclick = () => playCoin('tails');
-    document.getElementById('diceBtn').onclick = playDice; document.getElementById('rouletteBtn').onclick = playRoulette; document.getElementById('slotsBtn').onclick = playSlots; document.getElementById('dice2Btn').onclick = playDice2;
-    document.getElementById('startRaceBtn').onclick = startRace;
-
-    function showGameWindow(windowId) { document.querySelectorAll('.game-window').forEach(win => win.style.display = 'none'); document.getElementById(windowId).style.display = 'block'; }
-    function closeAllGames() { document.querySelectorAll('.game-window').forEach(win => win.style.display = 'none'); }
-    document.querySelectorAll('.close-game-btn').forEach(btn => btn.addEventListener('click', closeAllGames));
+    function closeGame(){ document.querySelector('.dashboard').style.display='block'; document.getElementById('gameFullscreen').style.display='none'; location.reload(); } // reload для сброса состояний
 
     const gameList = [
-        { name: "CAR RACE", emoji: "🚗", handler: () => showGameWindow('carRaceWindow') },
-        { name: "ОРЁЛ/РЕШКА", emoji: "🪙", handler: () => showGameWindow('coinWindow') },
-        { name: "КУБИК", emoji: "🎲", handler: () => showGameWindow('diceWindow') },
-        { name: "РУЛЕТКА", emoji: "🎡", handler: () => showGameWindow('rouletteWindow') },
-        { name: "СЛОТЫ", emoji: "🎰", handler: () => showGameWindow('slotsWindow') },
-        { name: "КОСТИ 2d6", emoji: "🎲🎲", handler: () => showGameWindow('dice2Window') }
+        { name: "CAR RACE", emoji: "🚗", handler: () => showGame('car') },
+        { name: "ОРЁЛ/РЕШКА", emoji: "🪙", handler: () => showGame('coin') },
+        { name: "КУБИК", emoji: "🎲", handler: () => showGame('dice') },
+        { name: "РУЛЕТКА", emoji: "🎡", handler: () => showGame('roulette') },
+        { name: "СЛОТЫ", emoji: "🎰", handler: () => showGame('slots') },
+        { name: "КОСТИ 2d6", emoji: "🎲🎲", handler: () => showGame('dice2') },
+        { name: "БЛЭКДЖЕК", emoji: "🃏", handler: () => showGame('blackjack') },
+        { name: "ВИДЕОПОКЕР", emoji: "🎰", handler: () => showGame('videopoker') },
+        { name: "КРЭПС", emoji: "🎲", handler: () => showGame('craps') }
     ];
-    function renderGamesCatalog() { const container = document.getElementById('gamesCatalog'); if (!container) return; container.innerHTML = ''; gameList.forEach(game => { const card = document.createElement('div'); card.className = 'game-card'; card.innerHTML = `<div class="game-emoji">${game.emoji}</div><div class="game-title">${game.name}</div>`; card.onclick = game.handler; container.appendChild(card); }); }
+    function renderGamesCatalog(){ const container=document.getElementById('gamesCatalog'); if(!container)return; container.innerHTML=''; gameList.forEach(g=>{ const card=document.createElement('div'); card.className='game-card'; card.innerHTML=`<div class="game-emoji">${g.emoji}</div><div class="game-title">${g.name}</div>`; card.onclick=g.handler; container.appendChild(card); }); }
 
-    function switchTab(tabId) { document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none'); document.getElementById(`${tabId}Tab`).style.display = 'block'; document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active')); document.querySelector(`.nav-btn[data-tab="${tabId}"]`).classList.add('active'); closeAllGames(); }
-    document.querySelectorAll('.nav-btn').forEach(btn => { btn.addEventListener('click', () => { const tab = btn.dataset.tab; if (tab === 'admin' && !isAdmin) return; switchTab(tab); }); });
+    function switchTab(tabId){ document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none'); document.getElementById(`${tabId}Tab`).style.display='block'; document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); document.querySelector(`.nav-btn[data-tab="${tabId}"]`).classList.add('active'); }
+    document.querySelectorAll('.nav-btn').forEach(b=>{ b.addEventListener('click',()=>{ const tab=b.dataset.tab; if(tab==='admin'&&!isAdmin)return; switchTab(tab); }); });
     renderGamesCatalog();
 
-    document.getElementById('doLoginBtn').onclick = async () => { const login = document.getElementById('loginUsername').value.trim(), pass = document.getElementById('loginPassword').value.trim(); if (!login || !pass) { document.getElementById('authMessage').innerHTML = 'Заполните поля'; return; } await loginUser(login, pass); };
-    document.getElementById('doRegisterBtn').onclick = async () => { const login = document.getElementById('regUsername').value.trim(), pass = document.getElementById('regPassword').value.trim(), link = document.getElementById('regBankarooLink').value.trim(); if (!login || !pass) { document.getElementById('regMessage').innerHTML = 'Заполните поля'; return; } await registerUser(login, pass, link); };
-    document.getElementById('showRegisterLink').onclick = () => { document.getElementById('authPanel').style.display = 'none'; document.getElementById('registerPanel').style.display = 'block'; };
-    document.getElementById('showAuthLink').onclick = () => { document.getElementById('registerPanel').style.display = 'none'; document.getElementById('authPanel').style.display = 'block'; };
+    document.getElementById('doLoginBtn').onclick=async()=>{ const l=document.getElementById('loginUsername').value.trim(), p=document.getElementById('loginPassword').value.trim(); if(!l||!p){ document.getElementById('authMessage').innerHTML='Заполните поля'; return; } await loginUser(l,p); };
+    document.getElementById('doRegisterBtn').onclick=async()=>{ const l=document.getElementById('regUsername').value.trim(), p=document.getElementById('regPassword').value.trim(), ln=document.getElementById('regBankarooLink').value.trim(); if(!l||!p){ document.getElementById('regMessage').innerHTML='Заполните поля'; return; } await registerUser(l,p,ln); };
+    document.getElementById('showRegisterLink').onclick=()=>{ document.getElementById('authPanel').style.display='none'; document.getElementById('registerPanel').style.display='block'; };
+    document.getElementById('showAuthLink').onclick=()=>{ document.getElementById('registerPanel').style.display='none'; document.getElementById('authPanel').style.display='block'; };
 </script>
 </body>
 </html>
