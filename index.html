@@ -198,8 +198,29 @@
     async function refreshBalance() { if(!currentUser)return; const u=await loadUsers(); if(u[currentUser]){ currentBalance=u[currentUser].balance; document.getElementById('globalBalance').innerText=currentBalance.toFixed(2); document.getElementById('accBalance').innerText=currentBalance.toFixed(2); } }
 
     function requestDeposit(){ const amt=prompt("Сумма ввода:"); if(amt&&!isNaN(parseFloat(amt))&&parseFloat(amt)>0){ fetch(`${SCRIPT_URL}?action=depositRequest&login=${encodeURIComponent(currentUser)}&amount=${amt}`); alert("✅ Заявка отправлена админу."); } else alert("❌ Неверная сумма"); }
-    async function requestWithdraw(){ const u=await loadUsers(); const user=u[currentUser]; if(!user)return; const req=user.deposited*2; if(currentBalance>=req){ if(confirm(`Вывести ${currentBalance} AMD?`)){ await fetch(`${SCRIPT_URL}?action=withdrawRequest&login=${encodeURIComponent(currentUser)}&amount=${currentBalance}`); alert("✅ Заявка отправлена."); } } else alert(`❌ Нужно минимум ${req} AMD`); }
-
+    async function requestWithdraw() {
+    if (!currentUser) return;
+    const users = await loadUsers();
+    const user = users[currentUser];
+    if (!user) return;
+    
+    const currentBal = user.balance || 0;
+    if (currentBal <= 0) {
+        alert("❌ Баланс уже нулевой, выводить нечего.");
+        return;
+    }
+    
+    if (!confirm(`Вы уверены, что хотите вывести ВСЕ ${currentBal} AMD?`)) return;
+    
+    try {
+        // Снимаем все средства
+        await fetch(`${SCRIPT_URL}?action=withdrawAll&login=${encodeURIComponent(currentUser)}`);
+        await refreshBalance();
+        alert(`✅ Вывод ${currentBal} AMD выполнен. Баланс обнулён.`);
+    } catch(e) {
+        alert("❌ Ошибка при выводе: " + e.message);
+    }
+    }
     async function loginUser(login,password){ const btn=document.getElementById('doLoginBtn'),spin=document.getElementById('loginSpinner'); btn.disabled=true; spin.style.display='block'; document.getElementById('authMessage').innerHTML='⏳ Проверка...'; const users=await loadUsers(); const user=users[login]; btn.disabled=false; spin.style.display='none'; if(user&&user.password===password){ currentUser=login; isAdmin=user.isAdmin===true; document.getElementById('authPanel').style.display='none'; document.getElementById('registerPanel').style.display='none'; document.getElementById('gamePanel').style.display='block'; document.getElementById('accLogin').innerText=currentUser; await refreshBalance(); if(isAdmin) document.getElementById('adminTabBtn').style.display='inline-block'; return true; } else { document.getElementById('authMessage').innerHTML='❌ Неверный логин или пароль'; return false; } }
     async function registerUser(login,password,link){ const btn=document.getElementById('doRegisterBtn'),spin=document.getElementById('registerSpinner'); btn.disabled=true; spin.style.display='block'; document.getElementById('regMessage').innerHTML='⏳ Регистрация...'; const users=await loadUsers(); if(users[login]){ document.getElementById('regMessage').innerHTML='❌ Логин существует'; btn.disabled=false; spin.style.display='none'; return false; } if(!document.getElementById('agreeTerms').checked){ document.getElementById('regMessage').innerHTML='❌ Примите условия'; btn.disabled=false; spin.style.display='none'; return false; } await createUser(login,password,link||''); document.getElementById('regMessage').innerHTML='✅ Регистрация успешна!'; btn.disabled=false; spin.style.display='none'; setTimeout(()=>{ document.getElementById('registerPanel').style.display='none'; document.getElementById('authPanel').style.display='block'; },1500); return true; }
 
