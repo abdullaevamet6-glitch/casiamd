@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -199,7 +199,7 @@
 
     function requestDeposit(){ const amt=prompt("Сумма ввода:"); if(amt&&!isNaN(parseFloat(amt))&&parseFloat(amt)>0){ fetch(`${SCRIPT_URL}?action=depositRequest&login=${encodeURIComponent(currentUser)}&amount=${amt}`); alert("✅ Заявка отправлена админу."); } else alert("❌ Неверная сумма"); }
     
-    // 🔽 ИСПРАВЛЕННАЯ ФУНКЦИЯ ВЫВОДА (снимает всё и обнуляет deposited)
+    // ФУНКЦИЯ ВЫВОДА ВСЕХ СРЕДСТВ
     async function requestWithdraw() {
         if (!currentUser) return;
         const users = await loadUsers();
@@ -215,7 +215,6 @@
         if (!confirm(`Вы уверены, что хотите вывести ВСЕ ${currentBal} AMD?`)) return;
         
         try {
-            // Снимаем все средства и обнуляем deposited
             await fetch(`${SCRIPT_URL}?action=withdrawAll&login=${encodeURIComponent(currentUser)}`);
             await refreshBalance();
             alert(`✅ Вывод ${currentBal} AMD выполнен. Баланс обнулён.`);
@@ -231,7 +230,7 @@
     document.getElementById('adminSetBalance')?.addEventListener('click',async()=>{ const t=document.getElementById('adminTargetUser').value.trim(), b=parseFloat(document.getElementById('adminNewBalance').value); if(!t||isNaN(b))return alert('Введите логин и баланс'); await setBalance(t,b); alert(`✅ Баланс ${t} = ${b} AMD`); if(t===currentUser)await refreshBalance(); });
     document.getElementById('logoutBtn')?.addEventListener('click',()=>{ currentUser=null; document.getElementById('gamePanel').style.display='none'; document.getElementById('authPanel').style.display='block'; });
     document.getElementById('depositBtn')?.addEventListener('click',requestDeposit); 
-    document.getElementById('withdrawBtn')?.addEventListener('click',requestWithdraw); // ← теперь вызывает новую функцию
+    document.getElementById('withdrawBtn')?.addEventListener('click',requestWithdraw);
 
     function openBetModal(carId){ pendingCarId=carId; document.getElementById('betModal').classList.add('active'); }
     document.getElementById('confirmBetBtn').onclick=async()=>{ const amt=parseFloat(document.getElementById('modalBetAmount').value); if(isNaN(amt)||amt<=0)return alert("Неверная сумма"); if(amt>currentBalance)return alert("Недостаточно средств"); const car=cars[pendingCarId]; if(car.activeBet!==null){ alert("Ставка уже есть"); return; } await addBalance(currentUser,-amt); await refreshBalance(); car.activeBet=amt; renderCars(); document.getElementById('betModal').classList.remove('active'); };
@@ -244,4 +243,140 @@
     async function playDice(){ const bet=parseFloat(document.getElementById('diceBet').value); const g=parseInt(document.getElementById('diceGuess').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); if(isNaN(g)||g<1||g>6)return alert("1-6"); const roll=Math.floor(Math.random()*6)+1; const win=roll===g; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*5); await refreshBalance(); document.getElementById('diceResult').innerHTML=win?`🎉 Выигрыш ${bet*5} AMD! (${roll})`:`😞 Проигрыш ${bet} AMD. (${roll})`; }
     async function playRoulette(){ const bet=parseFloat(document.getElementById('rouletteBet').value); const g=parseInt(document.getElementById('rouletteGuess').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); if(isNaN(g)||g<1||g>10)return alert("1-10"); const roll=Math.floor(Math.random()*10)+1; const win=roll===g; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*10); await refreshBalance(); document.getElementById('rouletteResult').innerHTML=win?`🎉 Выигрыш ${bet*10} AMD! (${roll})`:`😞 Проигрыш ${bet} AMD. (${roll})`; }
     async function playSlots(){ const bet=parseFloat(document.getElementById('slotsBet').value); if(isNaN(bet)||bet<=0)return alert("Введите ставку"); if(bet>currentBalance)return alert("Недостаточно средств"); const sym=['🍒','🍋','🍊','🍉','⭐','💎','7️⃣']; const a=sym[Math.floor(Math.random()*sym.length)]; const b=sym[Math.floor(Math.random()*sym.length)]; const c=sym[Math.floor(Math.random()*sym.length)]; document.getElementById('slotsDisplay').innerHTML=`${a} ${b} ${c}`; const win=a===b&&b===c; await addBalance(currentUser,-bet); if(win)await addBalance(currentUser,bet*7); await refreshBalance(); document.getElementById('slotsResult').innerHTML=win?`🎉 Выигрыш ${bet*7} AMD!`:`😞 Проигрыш ${bet} AMD.`; }
-    async function playDice2(){ const bet=parseFloat(document.getElementById('dice2Bet').value); const g=parseInt(docume
+    
+    // ============ ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ИГРЫ "КОСТИ 2d6" ============
+    async function playDice2(){ 
+        const bet=parseFloat(document.getElementById('dice2Bet').value); 
+        const g=parseInt(document.getElementById('dice2Guess').value); 
+        if(isNaN(bet)||bet<=0)return alert("Введите ставку"); 
+        if(bet>currentBalance)return alert("Недостаточно средств"); 
+        if(isNaN(g)||g<2||g>12)return alert("2-12"); 
+        const r1=Math.floor(Math.random()*6)+1; 
+        const r2=Math.floor(Math.random()*6)+1; 
+        const sum=r1+r2; 
+        const win=sum===g; 
+        await addBalance(currentUser,-bet); 
+        if(win)await addBalance(currentUser,bet*8); 
+        await refreshBalance(); 
+        document.getElementById('dice2Result').innerHTML=win?`🎉 Выигрыш ${bet*8} AMD! (${r1}+${r2}=${sum})`:`😞 Проигрыш ${bet} AMD. (${r1}+${r2}=${sum})`; 
+    }
+
+    function showGameMessage(elementId, message, isWin) {
+        const el = document.getElementById(elementId);
+        if(el) { el.innerHTML = message; el.style.color = isWin ? '#4caf50' : '#ff6666'; setTimeout(() => { if(el) el.innerHTML = ''; }, 3000); }
+    }
+
+    async function playBlackjack() {
+        const bet = parseFloat(document.getElementById('bjBet').value);
+        if (isNaN(bet) || bet <= 0) return showGameMessage('bjResult', "Введите ставку!", false);
+        if (bet > currentBalance) return showGameMessage('bjResult', "Недостаточно средств!", false);
+        const suits = { 'H': '♥', 'D': '♦', 'C': '♣', 'S': '♠' };
+        const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+        function getCard() { let rank = ranks[Math.floor(Math.random() * ranks.length)]; let suit = Object.values(suits)[Math.floor(Math.random() * 4)]; let value = rank === 'A' ? 11 : (['K','Q','J'].includes(rank) ? 10 : parseInt(rank)); return { rank, suit, value, display: `${rank}${suit}` }; }
+        function sumHand(hand) { let sum = hand.reduce((a,c)=>a+c.value,0); let aces = hand.filter(c=>c.rank==='A').length; while(sum > 21 && aces > 0) { sum -= 10; aces--; } return sum; }
+        let player = [getCard(), getCard()]; let dealer = [getCard(), getCard()]; let pSum = sumHand(player); let dSum = sumHand(dealer);
+        function updateUI() { document.getElementById('bjCards').innerHTML = `<strong>Ваши карты:</strong> ${player.map(c=>c.display).join(", ")} (очки: ${pSum})<br><strong>Дилер:</strong> ${dealer[0].display} (скрыта)`; }
+        updateUI();
+        while(pSum < 21 && confirm("Ещё карту?")) { player.push(getCard()); pSum = sumHand(player); updateUI(); }
+        if(pSum > 21) { await addBalance(currentUser, -bet); await refreshBalance(); showGameMessage('bjResult', `Перебор! Вы проиграли ${bet} AMD.`, false); return; }
+        while(dSum < 17) { dealer.push(getCard()); dSum = sumHand(dealer); }
+        document.getElementById('bjCards').innerHTML = `<strong>Ваши карты:</strong> ${player.map(c=>c.display).join(", ")} (очки: ${pSum})<br><strong>Дилер:</strong> ${dealer.map(c=>c.display).join(", ")} (очки: ${dSum})`;
+        if(dSum > 21 || pSum > dSum) { let win = bet * 2; await addBalance(currentUser, win); showGameMessage('bjResult', `Вы выиграли ${win} AMD!`, true); }
+        else if(pSum === dSum) { await addBalance(currentUser, bet); showGameMessage('bjResult', `Ничья, ставка возвращена.`, true); }
+        else { await addBalance(currentUser, -bet); showGameMessage('bjResult', `Вы проиграли ${bet} AMD.`, false); }
+        await refreshBalance();
+    }
+
+    async function playVideoPoker() {
+        const bet = parseFloat(document.getElementById('vpBet').value);
+        if (isNaN(bet) || bet <= 0) return showGameMessage('vpResult', "Введите ставку!", false);
+        if (bet > currentBalance) return showGameMessage('vpResult', "Недостаточно средств!", false);
+        const ranks = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"]; const suits = ["♥","♦","♣","♠"];
+        let deck = []; for(let r of ranks) for(let s of suits) deck.push(r+s);
+        for(let i=deck.length-1;i>0;i--){ let j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
+        let hand = deck.slice(0,5);
+        function updateHand() { let html = '<div style="display:flex; gap:10px; flex-wrap:wrap; margin:10px 0;">'; hand.forEach((card,idx) => { html += `<div style="background:#1e1e2e; padding:8px 16px; border-radius:16px;">${card}<br><input type="checkbox" id="hold${idx}" value="${idx}"> Замена</div>`; }); html += '</div>'; document.getElementById('vpHand').innerHTML = html; }
+        updateHand();
+        await new Promise(resolve => { let btn = document.createElement('button'); btn.innerText = "Заменить выбранные"; btn.className = "action-btn"; btn.onclick = async () => { let indices = []; for(let i=0;i<5;i++) { let cb = document.getElementById(`hold${i}`); if(cb && cb.checked) indices.push(i); } for(let idx of indices) hand[idx] = deck[5 + idx]; let newHand = hand.join(", "); let payout = 0; if(newHand.match(/(\w+♥.*\1♥.*\1♥.*\1♥)/)) payout = bet * 50; else if(newHand.match(/(\w+[♥♦♣♠].*\1.*\1.*\1)/)) payout = bet * 25; else if(newHand.match(/(\w+[♥♦♣♠].*\1.*\1)/)) payout = bet * 5; else payout = 0; if(payout > 0) { await addBalance(currentUser, payout); showGameMessage('vpResult', `Вы выиграли ${payout} AMD! (комбинация: ${newHand})`, true); } else { await addBalance(currentUser, -bet); showGameMessage('vpResult', `Проигрыш. Ваши карты: ${newHand}`, false); } await refreshBalance(); btn.remove(); resolve(); }; document.getElementById('vpHand').appendChild(btn); });
+    }
+
+    let crapsPoint = null;
+    async function rollCraps() {
+        const bet = parseFloat(document.getElementById('crapsBet').value);
+        if (isNaN(bet) || bet <= 0) return showGameMessage('crapsResult', "Введите ставку!", false);
+        if (bet > currentBalance) return showGameMessage('crapsResult', "Недостаточно средств!", false);
+        let roll = Math.floor(Math.random()*6)+1 + Math.floor(Math.random()*6)+1;
+        document.getElementById('crapsDice').innerHTML = `🎲 ${roll} 🎲`;
+        if(crapsPoint === null) {
+            if(roll === 7 || roll === 11) { await addBalance(currentUser, bet * 2); showGameMessage('crapsResult', `🎲 Выбросили ${roll} — ВЫИГРЫШ! +${bet*2} AMD`, true); await refreshBalance(); crapsPoint = null; }
+            else if(roll === 2 || roll === 3 || roll === 12) { await addBalance(currentUser, -bet); showGameMessage('crapsResult', `🎲 Выбросили ${roll} — ПРОИГРЫШ. -${bet} AMD`, false); await refreshBalance(); crapsPoint = null; }
+            else { crapsPoint = roll; showGameMessage('crapsResult', `🎲 Точка: ${crapsPoint}. Бросайте снова!`, true); }
+        } else {
+            if(roll === crapsPoint) { await addBalance(currentUser, bet * 2); showGameMessage('crapsResult', `🎲 Выпало ${roll} (точка) — ВЫИГРЫШ! +${bet*2} AMD`, true); await refreshBalance(); crapsPoint = null; }
+            else if(roll === 7) { await addBalance(currentUser, -bet); showGameMessage('crapsResult', `🎲 Выпало 7 — ПРОИГРЫШ. -${bet} AMD`, false); await refreshBalance(); crapsPoint = null; }
+            else { showGameMessage('crapsResult', `🎲 Выпало ${roll}. Ничья. Продолжайте (точка ${crapsPoint})`, true); }
+        }
+    }
+
+    const mainDashboard = document.querySelector('.dashboard');
+    let gameContainer = null;
+    function showGame(gameId){
+        if(!gameContainer){ gameContainer = document.createElement('div'); gameContainer.id = 'gameFullscreen'; document.getElementById('gamePanel').appendChild(gameContainer); }
+        mainDashboard.style.display = 'none';
+        gameContainer.style.display = 'block';
+        let html = '<div class="game-fullscreen"><button class="back-btn" onclick="closeGame()">← К ИГРАМ</button>';
+        if(gameId === 'car'){
+            html += `<h2>🚗 CAR RACE</h2><div id="carsGrid"></div><button id="startRaceBtn" class="race-btn">🚦 НАЧАТЬ ГОНКУ</button>`;
+            gameContainer.innerHTML = html; renderCars(); document.getElementById('startRaceBtn').onclick = startRace;
+        } else if(gameId === 'coin'){
+            html += `<h2>🪙 ОРЁЛ / РЕШКА</h2><input type="number" id="coinBet" class="bet-input" placeholder="Ставка" value="10"><div style="display:flex; gap:10px;"><button id="coinHeads" class="action-btn">ОРЁЛ</button><button id="coinTails" class="action-btn">РЕШКА</button></div><div id="coinResult"></div>`;
+            gameContainer.innerHTML = html; document.getElementById('coinHeads').onclick = () => playCoin('heads'); document.getElementById('coinTails').onclick = () => playCoin('tails');
+        } else if(gameId === 'dice'){
+            html += `<h2>🎲 КУБИК (x5)</h2><input type="number" id="diceBet" class="bet-input" placeholder="Ставка" value="10"><input type="number" id="diceGuess" class="bet-input" placeholder="1-6"><button id="diceBtn" class="action-btn">КРУТИТЬ</button><div id="diceResult"></div>`;
+            gameContainer.innerHTML = html; document.getElementById('diceBtn').onclick = playDice;
+        } else if(gameId === 'roulette'){
+            html += `<h2>🎡 РУЛЕТКА (x10)</h2><input type="number" id="rouletteBet" class="bet-input" placeholder="Ставка" value="10"><input type="number" id="rouletteGuess" class="bet-input" placeholder="1-10"><button id="rouletteBtn" class="action-btn">КРУТИТЬ</button><div id="rouletteResult"></div>`;
+            gameContainer.innerHTML = html; document.getElementById('rouletteBtn').onclick = playRoulette;
+        } else if(gameId === 'slots'){
+            html += `<h2>🎰 СЛОТЫ (x7)</h2><input type="number" id="slotsBet" class="bet-input" placeholder="Ставка" value="10"><button id="slotsBtn" class="action-btn">КРУТИТЬ</button><div id="slotsDisplay" style="font-size:32px; text-align:center; margin:15px 0;">🍒 🍒 🍒</div><div id="slotsResult"></div>`;
+            gameContainer.innerHTML = html; document.getElementById('slotsBtn').onclick = playSlots;
+        } else if(gameId === 'dice2'){
+            html += `<h2>🎲 КОСТИ 2d6 (x8)</h2><input type="number" id="dice2Bet" class="bet-input" placeholder="Ставка" value="10"><input type="number" id="dice2Guess" class="bet-input" placeholder="2-12"><button id="dice2Btn" class="action-btn">КРУТИТЬ</button><div id="dice2Result"></div>`;
+            gameContainer.innerHTML = html; document.getElementById('dice2Btn').onclick = playDice2;
+        } else if(gameId === 'blackjack'){
+            html += `<h2>🃏 БЛЭКДЖЕК</h2><input type="number" id="bjBet" class="bet-input" placeholder="Ставка" value="10"><div id="bjCards" style="margin:15px 0;"></div><button class="action-btn" onclick="playBlackjack()">ИГРАТЬ</button><div id="bjResult"></div>`;
+            gameContainer.innerHTML = html;
+        } else if(gameId === 'videopoker'){
+            html += `<h2>🎰 ВИДЕОПОКЕР</h2><input type="number" id="vpBet" class="bet-input" placeholder="Ставка" value="10"><div id="vpHand"></div><button class="action-btn" onclick="playVideoPoker()">ИГРАТЬ</button><div id="vpResult"></div>`;
+            gameContainer.innerHTML = html;
+        } else if(gameId === 'craps'){
+            html += `<h2>🎲 КРЭПС</h2><input type="number" id="crapsBet" class="bet-input" placeholder="Ставка" value="10"><div id="crapsDice" style="font-size:48px; text-align:center; margin:15px 0;">🎲 🎲</div><button class="action-btn" onclick="rollCraps()">БРОСИТЬ КУБИКИ</button><div id="crapsResult"></div>`;
+            gameContainer.innerHTML = html;
+        }
+    }
+    function closeGame(){ mainDashboard.style.display = 'block'; if(gameContainer) gameContainer.style.display = 'none'; }
+
+    const gameList = [
+        { name: "CAR RACE", emoji: "🚗", handler: () => showGame('car') },
+        { name: "ОРЁЛ/РЕШКА", emoji: "🪙", handler: () => showGame('coin') },
+        { name: "КУБИК", emoji: "🎲", handler: () => showGame('dice') },
+        { name: "РУЛЕТКА", emoji: "🎡", handler: () => showGame('roulette') },
+        { name: "СЛОТЫ", emoji: "🎰", handler: () => showGame('slots') },
+        { name: "КОСТИ 2d6", emoji: "🎲🎲", handler: () => showGame('dice2') },
+        { name: "БЛЭКДЖЕК", emoji: "🃏", handler: () => showGame('blackjack') },
+        { name: "ВИДЕОПОКЕР", emoji: "🎰", handler: () => showGame('videopoker') },
+        { name: "КРЭПС", emoji: "🎲", handler: () => showGame('craps') }
+    ];
+    function renderGamesCatalog(){ const container=document.getElementById('gamesCatalog'); if(!container)return; container.innerHTML=''; gameList.forEach(g=>{ const card=document.createElement('div'); card.className='game-card'; card.innerHTML=`<div class="game-emoji">${g.emoji}</div><div class="game-title">${g.name}</div>`; card.onclick=g.handler; container.appendChild(card); }); }
+
+    function switchTab(tabId){ document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none'); document.getElementById(`${tabId}Tab`).style.display='block'; document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); document.querySelector(`.nav-btn[data-tab="${tabId}"]`).classList.add('active'); }
+    document.querySelectorAll('.nav-btn').forEach(b=>{ b.addEventListener('click',()=>{ const tab=b.dataset.tab; if(tab==='admin'&&!isAdmin)return; switchTab(tab); }); });
+    renderGamesCatalog();
+
+    document.getElementById('doLoginBtn').onclick=async()=>{ const l=document.getElementById('loginUsername').value.trim(), p=document.getElementById('loginPassword').value.trim(); if(!l||!p){ document.getElementById('authMessage').innerHTML='Заполните поля'; return; } await loginUser(l,p); };
+    document.getElementById('doRegisterBtn').onclick=async()=>{ const l=document.getElementById('regUsername').value.trim(), p=document.getElementById('regPassword').value.trim(), ln=document.getElementById('regBankarooLink').value.trim(); if(!l||!p){ document.getElementById('regMessage').innerHTML='Заполните поля'; return; } await registerUser(l,p,ln); };
+    document.getElementById('showRegisterLink').onclick=()=>{ document.getElementById('authPanel').style.display='none'; document.getElementById('registerPanel').style.display='block'; };
+    document.getElementById('showAuthLink').onclick=()=>{ document.getElementById('registerPanel').style.display='none'; document.getElementById('authPanel').style.display='block'; };
+</script>
+</body>
+</html>
